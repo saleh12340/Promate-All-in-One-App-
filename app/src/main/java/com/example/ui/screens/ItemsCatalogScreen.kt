@@ -91,7 +91,7 @@ fun ItemsCatalogScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(14.dp)
+            .padding(start = 12.dp, top = 2.dp, end = 12.dp, bottom = 10.dp)
     ) {
         OutlinedTextField(
             value = searchQuery,
