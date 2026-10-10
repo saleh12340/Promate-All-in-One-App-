@@ -100,7 +100,7 @@ fun CustomerLedgerScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(start = 12.dp, top = 2.dp, end = 12.dp, bottom = 10.dp)
+            .padding(start = 8.dp, top = 0.dp, end = 8.dp, bottom = 4.dp)
             .testTag("customer_ledger_screen")
     ) {
         // TOP OF SCREEN UTILIZATION: Single-Row Action Bar for Quick Vouchers
@@ -114,7 +114,7 @@ fun CustomerLedgerScreen(
             onVoiceClick = { requestVoiceForVoucher() },
             onSubmit = { viewModel.submitVoucherFromActionBar() },
             isLoading = isVoucherSaving,
-            modifier = Modifier.padding(bottom = 10.dp)
+            modifier = Modifier.padding(bottom = 6.dp)
         )
 
         // Customer Selector & Current Balance Overview Card
@@ -231,7 +231,7 @@ fun CustomerLedgerScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         // Cumulative Ledger Title
         Row(
@@ -294,7 +294,7 @@ fun CustomerLedgerScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
                 items(vouchers.reversed(), key = { it.id }) { voucher ->
                     RunningBalanceCard(voucher = voucher)
