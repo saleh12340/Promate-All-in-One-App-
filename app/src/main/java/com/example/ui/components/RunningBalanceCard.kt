@@ -3,11 +3,8 @@ package com.example.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -19,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.VoucherTransaction
@@ -37,9 +35,9 @@ fun RunningBalanceCard(
 ) {
     val dateStr = rememberDate(voucher.createdAt)
     val (typeText, typeColor) = when (voucher.voucherType) {
-        VoucherType.RECEIPT -> "سند قبض" to GreenCredit
-        VoucherType.PAYMENT -> "سند صرف" to CoralDebit
-        VoucherType.INVOICE_CREDIT -> "فاتورة آجلة" to CoralDebit
+        VoucherType.RECEIPT -> "قبض" to GreenCredit
+        VoucherType.PAYMENT -> "صرف" to CoralDebit
+        VoucherType.INVOICE_CREDIT -> "آجل" to CoralDebit
     }
     val balance = voucher.runningBalance
     val balanceLabel = when {
@@ -49,76 +47,53 @@ fun RunningBalanceCard(
     }
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
-                .padding(horizontal = 10.dp, vertical = 4.dp)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(10.dp))
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            LedgerRow("التاريخ", dateStr, emphasize = false)
-            LedgerDivider()
-            LedgerRow("نوع العملية", typeText, valueColor = typeColor)
-            LedgerDivider()
-            LedgerRow("مبلغ العملية", "${EscPos58mmPrinterService.formatAmount(voucher.amount)} ر.ي",
-                valueColor = if (voucher.credit > 0) GreenCredit else CoralDebit, emphasize = true)
-            LedgerDivider()
-            LedgerRow("التفاصيل", voucher.statement.ifBlank { "—" }, emphasize = false)
-            LedgerDivider()
-            LedgerRow(
-                "الرصيد التراكمي",
-                "${EscPos58mmPrinterService.formatAmount(kotlin.math.abs(balance))} ر.ي ($balanceLabel)",
-                valueColor = if (balance > 0) CoralDebit else if (balance < 0) GreenCredit else MaterialTheme.colorScheme.onSurface,
-                emphasize = true
-            )
+            LedgerCell(dateStr, 1.05f, false)
+            LedgerCell(typeText, 0.62f, true, typeColor)
+            LedgerCell(EscPos58mmPrinterService.formatAmount(voucher.amount), 0.95f, true,
+                if (voucher.credit > 0) GreenCredit else CoralDebit)
+            LedgerCell(voucher.statement.ifBlank { "—" }, 1.35f, false, maxLines = 2)
+            LedgerCell("${EscPos58mmPrinterService.formatAmount(kotlin.math.abs(balance))} ${balanceLabel}", 1.05f, true,
+                if (balance > 0) CoralDebit else if (balance < 0) GreenCredit else MaterialTheme.colorScheme.onSurface)
         }
     }
 }
 
 @Composable
-private fun LedgerRow(
-    label: String,
+private fun LedgerCell(
     value: String,
-    valueColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
-    emphasize: Boolean = false
+    weight: Float,
+    emphasize: Boolean,
+    color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
+    maxLines: Int = 1
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            modifier = Modifier.weight(0.85f),
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Medium
-        )
-        Text(
-            text = value,
-            modifier = Modifier.weight(1.5f),
-            fontSize = if (emphasize) 13.sp else 12.sp,
-            color = valueColor,
-            fontWeight = if (emphasize) FontWeight.Bold else FontWeight.SemiBold,
-            textAlign = TextAlign.End
-        )
-    }
-}
-
-@Composable
-private fun LedgerDivider() {
-    Spacer(
-        modifier = Modifier.fillMaxWidth().height(1.dp)
-            .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.75f))
+    Text(
+        text = value,
+        modifier = Modifier.weight(weight),
+        fontSize = if (emphasize) 11.sp else 10.sp,
+        color = color,
+        fontWeight = if (emphasize) FontWeight.Bold else FontWeight.Medium,
+        textAlign = TextAlign.Center,
+        maxLines = maxLines,
+        overflow = TextOverflow.Ellipsis,
+        lineHeight = 12.sp
     )
 }
 
 @Composable
 private fun rememberDate(timestamp: Long): String {
     return androidx.compose.runtime.remember(timestamp) {
-        SimpleDateFormat("yyyy/MM/dd  hh:mm a", Locale.US).format(Date(timestamp))
+        SimpleDateFormat("MM/dd HH:mm", Locale.US).format(Date(timestamp))
     }
 }
