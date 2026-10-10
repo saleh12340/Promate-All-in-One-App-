@@ -71,7 +71,7 @@ fun VoiceRecordingDialog(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
                 .testTag("voice_recording_dialog"),
-            shape = RoundedCornerShape(20.dp),
+            shape = MaterialTheme.shapes.extraLarge,
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
         ) {
@@ -149,7 +149,7 @@ fun VoiceRecordingDialog(
                         OutlinedButton(
                             onClick = onCancel,
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(10.dp)
+                            shape = MaterialTheme.shapes.small
                         ) {
                             Text("إلغاء", fontSize = 13.sp)
                         }
@@ -159,7 +159,7 @@ fun VoiceRecordingDialog(
                             modifier = Modifier
                                 .weight(1f)
                                 .testTag("stop_record_button"),
-                            shape = RoundedCornerShape(10.dp),
+                            shape = MaterialTheme.shapes.small,
                             colors = ButtonDefaults.buttonColors(containerColor = CoralDebit)
                         ) {
                             Icon(Icons.Default.Stop, contentDescription = null, modifier = Modifier.size(18.dp))
