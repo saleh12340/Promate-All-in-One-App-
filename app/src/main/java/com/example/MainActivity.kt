@@ -23,6 +23,8 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Store
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -84,6 +86,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainAppContent(viewModel: AccountingViewModel) {
     var currentScreen by remember { mutableStateOf(AppScreen.INVOICING) }
+    var showExitConfirmation by remember { mutableStateOf(false) }
 
     // Dialog state collectors
     val showReceiptDialog by viewModel.showReceiptDialog.collectAsState()
@@ -96,11 +99,27 @@ fun MainAppContent(viewModel: AccountingViewModel) {
     val isRecording by viewModel.isRecording.collectAsState()
     val isTranscribing by viewModel.isTranscribing.collectAsState()
 
-    // Back button handling: returns to INVOICING main screen
-    if (currentScreen != AppScreen.INVOICING) {
-        BackHandler {
-            currentScreen = AppScreen.INVOICING
-        }
+    BackHandler {
+        if (currentScreen != AppScreen.INVOICING) currentScreen = AppScreen.INVOICING
+        else showExitConfirmation = true
+    }
+
+    if (showExitConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showExitConfirmation = false },
+            title = { Text("تأكيد الخروج") },
+            text = { Text("هل تريد الخروج من التطبيق؟") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showExitConfirmation = false
+                    (androidx.compose.ui.platform.LocalContext.current as? android.app.Activity)?.finish()
+                }) { Text("خروج") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitConfirmation = false }) { Text("إلغاء") }
+            },
+            shape = RoundedCornerShape(20.dp)
+        )
     }
 
     Scaffold(
