@@ -214,8 +214,8 @@ fun InvoicingScreen(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, CellBorderColor, RoundedCornerShape(14.dp)),
-            shape = RoundedCornerShape(14.dp),
+                .border(1.dp, CellBorderColor, MaterialTheme.shapes.medium),
+            shape = MaterialTheme.shapes.medium,
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
@@ -237,7 +237,7 @@ fun InvoicingScreen(
                         placeholder = { Text("سعر الواحدة", fontSize = 12.sp, textAlign = TextAlign.Center) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
-                        shape = RoundedCornerShape(14.dp),
+                        shape = MaterialTheme.shapes.medium,
                         modifier = Modifier
                             .weight(1.1f)
                             .height(52.dp)
@@ -270,7 +270,7 @@ fun InvoicingScreen(
                                 )
                             }
                         },
-                        shape = RoundedCornerShape(14.dp),
+                        shape = MaterialTheme.shapes.medium,
                         modifier = Modifier
                             .weight(1.8f)
                             .height(52.dp)
@@ -291,7 +291,7 @@ fun InvoicingScreen(
                         placeholder = { Text("1", fontSize = 11.sp, textAlign = TextAlign.Center) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
-                        shape = RoundedCornerShape(14.dp),
+                        shape = MaterialTheme.shapes.medium,
                         modifier = Modifier
                             .weight(0.7f)
                             .height(52.dp)
@@ -312,7 +312,7 @@ fun InvoicingScreen(
                         placeholder = { Text("القيمة الإجمالية", fontSize = 11.sp, textAlign = TextAlign.Center) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
-                        shape = RoundedCornerShape(14.dp),
+                        shape = MaterialTheme.shapes.medium,
                         modifier = Modifier
                             .weight(1.2f)
                             .height(52.dp)
@@ -336,7 +336,7 @@ fun InvoicingScreen(
                         .fillMaxWidth()
                         .height(46.dp)
                         .testTag("add_item_button"),
-                    shape = RoundedCornerShape(14.dp),
+                    shape = MaterialTheme.shapes.medium,
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
                 ) {
                     Icon(
@@ -362,8 +362,8 @@ fun InvoicingScreen(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, CellBorderColor, RoundedCornerShape(10.dp)),
-            shape = RoundedCornerShape(14.dp),
+                .border(1.dp, CellBorderColor, MaterialTheme.shapes.small),
+            shape = MaterialTheme.shapes.medium,
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
             Column(
@@ -421,7 +421,7 @@ fun InvoicingScreen(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Surface(
-                            shape = RoundedCornerShape(12.dp),
+                            shape = MaterialTheme.shapes.medium,
                             color = CoralRed.copy(alpha = 0.1f),
                             border = androidx.compose.foundation.BorderStroke(1.dp, CoralRed)
                         ) {
@@ -457,7 +457,7 @@ fun InvoicingScreen(
                             .height(48.dp),
                         placeholder = { Text("اسم العميل", fontSize = 13.sp) },
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = MaterialTheme.shapes.medium,
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = CellBorderColor,
                             focusedBorderColor = PrimaryBlue,
@@ -470,7 +470,7 @@ fun InvoicingScreen(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
+                        shape = MaterialTheme.shapes.medium,
                         color = LightBluePill,
                         modifier = Modifier.clickable {
                             // customer selected
@@ -502,8 +502,8 @@ fun InvoicingScreen(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, CellBorderColor, RoundedCornerShape(16.dp)),
-            shape = RoundedCornerShape(16.dp),
+                .border(1.dp, CellBorderColor, MaterialTheme.shapes.large),
+            shape = MaterialTheme.shapes.large,
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
         ) {
@@ -548,7 +548,7 @@ fun InvoicingScreen(
                                 Toast.makeText(context, "مشاركة الفاتورة كصورة أو PDF", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        shape = RoundedCornerShape(12.dp),
+                        shape = MaterialTheme.shapes.medium,
                         modifier = Modifier
                             .weight(1f)
                             .height(48.dp)
@@ -565,7 +565,7 @@ fun InvoicingScreen(
                                 Toast.makeText(context, "جاري إرسال أمر الطباعة الحرارية 58mm", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        shape = RoundedCornerShape(12.dp),
+                        shape = MaterialTheme.shapes.medium,
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
                         modifier = Modifier
                             .weight(1.3f)
@@ -583,7 +583,7 @@ fun InvoicingScreen(
                                 Toast.makeText(context, "تم حفظ الفاتورة بنجاح", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        shape = RoundedCornerShape(12.dp),
+                        shape = MaterialTheme.shapes.medium,
                         modifier = Modifier
                             .weight(1f)
                             .height(48.dp)
