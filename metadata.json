@@ -1,0 +1,6 @@
+{
+  "name": "المحاسب الذكي",
+  "description": "نظام الفواتير والمحاسبة الذكي لإدارة المبيعات وحسابات العملاء وسندات القبض والصرف مع الطباعة الحرارية 58mm والتفريغ الصوتي الذكي",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
