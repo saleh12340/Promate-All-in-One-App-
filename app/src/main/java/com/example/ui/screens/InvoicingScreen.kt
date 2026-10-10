@@ -462,7 +462,10 @@ fun InvoicingScreen(
         // 4. DUAL COLUMN INVOICE TABLE (Matching exact screenshot layout)
         DualColumnInvoiceTable(
             rows = rows,
-            onRemoveRow = { viewModel.removeInvoiceRow(it) }
+            onRemoveRow = { viewModel.removeInvoiceRow(it) },
+            onUpdateRow = { index, description, quantity, unitPrice ->
+                viewModel.updateInvoiceRow(index, description, quantity, unitPrice)
+            }
         )
 
         Spacer(modifier = Modifier.height(10.dp))
