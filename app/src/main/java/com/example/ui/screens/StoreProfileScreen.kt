@@ -102,7 +102,7 @@ fun StoreProfileScreen(
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
+            shape = MaterialTheme.shapes.large,
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
@@ -135,7 +135,7 @@ fun StoreProfileScreen(
                     label = { Text("اسم المتجر") },
                     placeholder = { Text("مثال: بقالة العزي") },
                     singleLine = true,
-                    shape = RoundedCornerShape(14.dp),
+                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = PrimaryBlue,
@@ -155,7 +155,7 @@ fun StoreProfileScreen(
                     placeholder = { Text("7xxxxxxxx") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = PrimaryBlue,
@@ -174,7 +174,7 @@ fun StoreProfileScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
-                    shape = RoundedCornerShape(10.dp),
+                    shape = MaterialTheme.shapes.small,
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
                 ) {
                     Icon(Icons.Default.Save, contentDescription = null, tint = Color.White)
@@ -186,25 +186,25 @@ fun StoreProfileScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
+        Card(modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.large, colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
             Column(Modifier.fillMaxWidth().padding(18.dp)) {
                 Text("النسخ الاحتياطي والاستعادة", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = DarkText)
                 Spacer(Modifier.height(6.dp))
                 Text("احفظ بيانات العملاء والفواتير والحركات في ملف لاستعادتها عند الحاجة.", fontSize = 13.sp, color = DarkText)
                 Spacer(Modifier.height(12.dp))
-                Button(onClick = { backupLauncher.launch("smart-invoicing-backup.db") }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)) { Text("إنشاء نسخة احتياطية", color = Color.White, fontWeight = FontWeight.Bold) }
+                Button(onClick = { backupLauncher.launch("smart-invoicing-backup.db") }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = MaterialTheme.shapes.medium, colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)) { Text("إنشاء نسخة احتياطية", color = Color.White, fontWeight = FontWeight.Bold) }
                 Spacer(Modifier.height(8.dp))
-                Button(onClick = { showRestoreConfirmation = true }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB42318))) { Text("استعادة نسخة احتياطية", color = Color.White, fontWeight = FontWeight.Bold) }
+                Button(onClick = { showRestoreConfirmation = true }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = MaterialTheme.shapes.medium, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB42318))) { Text("استعادة نسخة احتياطية", color = Color.White, fontWeight = FontWeight.Bold) }
             }
         }
         if (showRestoreConfirmation) {
-            AlertDialog(onDismissRequest = { showRestoreConfirmation = false }, title = { Text("تأكيد الاستعادة") }, text = { Text("ستُستبدل البيانات الحالية ببيانات النسخة الاحتياطية. أنشئ نسخة من بياناتك الحالية أولاً. هل تريد المتابعة؟") }, confirmButton = { TextButton(onClick = { showRestoreConfirmation = false; restoreLauncher.launch(arrayOf("*/*")) }) { Text("متابعة الاستعادة") } }, dismissButton = { TextButton(onClick = { showRestoreConfirmation = false }) { Text("إلغاء") } }, shape = RoundedCornerShape(20.dp))
+            AlertDialog(onDismissRequest = { showRestoreConfirmation = false }, title = { Text("تأكيد الاستعادة") }, text = { Text("ستُستبدل البيانات الحالية ببيانات النسخة الاحتياطية. أنشئ نسخة من بياناتك الحالية أولاً. هل تريد المتابعة؟") }, confirmButton = { TextButton(onClick = { showRestoreConfirmation = false; restoreLauncher.launch(arrayOf("*/*")) }) { Text("متابعة الاستعادة") } }, dismissButton = { TextButton(onClick = { showRestoreConfirmation = false }) { Text("إلغاء") } }, shape = MaterialTheme.shapes.extraLarge)
         }
         Spacer(Modifier.height(16.dp))
         // Thermal Printing Specs card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
+            shape = MaterialTheme.shapes.large,
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
