@@ -101,7 +101,7 @@ fun ItemsCatalogScreen(
                 Icon(Icons.Default.Search, contentDescription = null, tint = PrimaryBlue)
             },
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = MaterialTheme.shapes.medium,
             modifier = Modifier.fillMaxWidth().height(52.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryBlue,
@@ -129,7 +129,7 @@ fun ItemsCatalogScreen(
                         Toast.makeText(context, "تم اختيار: ${item.name}", Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = MaterialTheme.shapes.medium,
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
@@ -154,7 +154,7 @@ fun ItemsCatalogScreen(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Surface(
-                                shape = RoundedCornerShape(6.dp),
+                                shape = MaterialTheme.shapes.extraSmall,
                                 color = LightBluePill
                             ) {
                                 Icon(
