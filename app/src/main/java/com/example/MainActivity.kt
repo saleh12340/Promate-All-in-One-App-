@@ -87,6 +87,7 @@ class MainActivity : ComponentActivity() {
 fun MainAppContent(viewModel: AccountingViewModel) {
     var currentScreen by remember { mutableStateOf(AppScreen.INVOICING) }
     var showExitConfirmation by remember { mutableStateOf(false) }
+    val activityContext = androidx.compose.ui.platform.LocalContext.current
 
     // Dialog state collectors
     val showReceiptDialog by viewModel.showReceiptDialog.collectAsState()
@@ -112,7 +113,7 @@ fun MainAppContent(viewModel: AccountingViewModel) {
             confirmButton = {
                 TextButton(onClick = {
                     showExitConfirmation = false
-                    (androidx.compose.ui.platform.LocalContext.current as? android.app.Activity)?.finish()
+                    (activityContext as? android.app.Activity)?.finish()
                 }) { Text("خروج") }
             },
             dismissButton = {
