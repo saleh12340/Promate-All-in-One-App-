@@ -65,55 +65,29 @@ fun InvoiceTable(
                 .fillMaxWidth()
                 .padding(12.dp)
         ) {
-            // Table Header
+            // RTL header order: total, quantity, item details, unit price, row number.
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.small)
+                modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small)
                     .background(MaterialTheme.colorScheme.primaryContainer)
                     .padding(vertical = 8.dp, horizontal = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "م",
-                    modifier = Modifier.width(24.dp),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "بيان الصنف",
-                    modifier = Modifier.weight(2.2f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Text(
-                    text = "الكمية",
-                    modifier = Modifier.weight(1.0f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "السعر",
-                    modifier = Modifier.weight(1.3f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "الإجمالي",
-                    modifier = Modifier.weight(1.4f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.width(32.dp)) // space for delete icon
+                Text("الإجمالي", modifier = Modifier.weight(1.3f), fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    textAlign = TextAlign.Center, maxLines = 1)
+                Text("الكمية", modifier = Modifier.weight(0.8f), fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    textAlign = TextAlign.Center, maxLines = 1)
+                Text("التفاصيل", modifier = Modifier.weight(2.0f), fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    textAlign = TextAlign.Center, maxLines = 1)
+                Text("سعر الواحدة", modifier = Modifier.weight(1.2f), fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    textAlign = TextAlign.Center, maxLines = 1)
+                Text("م", modifier = Modifier.width(24.dp), fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    textAlign = TextAlign.Center)
+                Spacer(modifier = Modifier.width(28.dp))
             }
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -150,44 +124,45 @@ private fun InvoiceTableRowItem(
     onVoiceClick: () -> Unit
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(MaterialTheme.shapes.small)
+        modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small)
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
             .padding(vertical = 4.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Row Number
+        // RTL order: total → quantity → details → unit price → row number → delete.
+        val totalFormatted = EscPos58mmPrinterService.formatAmount(item.totalPrice)
         Text(
-            text = "${index + 1}",
-            modifier = Modifier.width(24.dp),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
+            text = totalFormatted,
+            modifier = Modifier.weight(1.3f).padding(horizontal = 2.dp),
+            fontSize = 11.sp, fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.Center,
+            maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Clip
         )
-
-        // Item Description with Voice Mic & Text Wrapping
+        OutlinedTextField(
+            value = item.quantityStr,
+            onValueChange = onUpdateQuantity,
+            modifier = Modifier.weight(0.8f).testTag("item_quantity_$index"),
+            placeholder = { Text("1", fontSize = 10.sp) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            singleLine = true, textStyle = androidx.compose.ui.text.TextStyle(textAlign = TextAlign.Center, fontSize = 12.sp),
+            shape = MaterialTheme.shapes.small,
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface
+            )
+        )
         OutlinedTextField(
             value = item.description,
             onValueChange = onUpdateDescription,
-            modifier = Modifier
-                .weight(2.2f)
-                .testTag("item_description_$index"),
-            placeholder = { Text("اسم الصنف...", fontSize = 11.sp) },
-            singleLine = false,
-            maxLines = 2,
+            modifier = Modifier.weight(2.0f).testTag("item_description_$index"),
+            placeholder = { Text("اسم الصنف", fontSize = 10.sp) },
+            singleLine = true,
+            textStyle = androidx.compose.ui.text.TextStyle(textAlign = TextAlign.Center, fontSize = 12.sp),
             trailingIcon = {
-                IconButton(
-                    onClick = onVoiceClick,
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Mic,
-                        contentDescription = "صوت",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp)
-                    )
+                IconButton(onClick = onVoiceClick, modifier = Modifier.size(24.dp)) {
+                    Icon(Icons.Default.Mic, contentDescription = "إدخال صوتي",
+                        tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                 }
             },
             shape = MaterialTheme.shapes.small,
@@ -197,39 +172,13 @@ private fun InvoiceTableRowItem(
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface
             )
         )
-
-        Spacer(modifier = Modifier.width(4.dp))
-
-        // Quantity
-        OutlinedTextField(
-            value = item.quantityStr,
-            onValueChange = onUpdateQuantity,
-            modifier = Modifier
-                .weight(1.0f)
-                .testTag("item_quantity_$index"),
-            placeholder = { Text("1", fontSize = 11.sp) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            singleLine = true,
-            shape = MaterialTheme.shapes.small,
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.Transparent,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface
-            )
-        )
-
-        Spacer(modifier = Modifier.width(4.dp))
-
-        // Unit Price
         OutlinedTextField(
             value = item.unitPriceStr,
             onValueChange = onUpdateUnitPrice,
-            modifier = Modifier
-                .weight(1.3f)
-                .testTag("item_price_$index"),
-            placeholder = { Text("0", fontSize = 11.sp) },
+            modifier = Modifier.weight(1.2f).testTag("item_price_$index"),
+            placeholder = { Text("0", fontSize = 10.sp) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true,
+            singleLine = true, textStyle = androidx.compose.ui.text.TextStyle(textAlign = TextAlign.Center, fontSize = 12.sp),
             shape = MaterialTheme.shapes.small,
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = Color.Transparent,
@@ -237,34 +186,15 @@ private fun InvoiceTableRowItem(
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface
             )
         )
-
-        // Total
-        val totalFormatted = EscPos58mmPrinterService.formatAmount(item.totalPrice)
         Text(
-            text = totalFormatted,
-            modifier = Modifier
-                .weight(1.4f)
-                .padding(horizontal = 4.dp),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center
+            text = "${index + 1}", modifier = Modifier.width(24.dp),
+            fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center
         )
-
-        // Delete Row Action
         if (canDelete) {
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier
-                    .size(28.dp)
-                    .testTag("item_delete_$index")
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "حذف السطر",
-                    tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(16.dp)
-                )
+            IconButton(onClick = onDelete, modifier = Modifier.size(28.dp).testTag("item_delete_$index")) {
+                Icon(Icons.Default.Close, contentDescription = "حذف السطر",
+                    tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
             }
         } else {
             Spacer(modifier = Modifier.width(28.dp))
