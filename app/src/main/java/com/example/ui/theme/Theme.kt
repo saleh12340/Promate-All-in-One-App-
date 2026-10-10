@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-private val LightColorScheme = lightColorScheme(
+private val AppColorScheme = lightColorScheme(
     primary = PrimaryBlue,
     onPrimary = Color.White,
     primaryContainer = LightBluePill,
@@ -22,7 +22,7 @@ private val LightColorScheme = lightColorScheme(
     surface = SurfaceWhite,
     surfaceVariant = SurfaceCard,
     outline = CellBorderColor,
-    outlineVariant = Color(0xFFDCE4EE),
+    outlineVariant = DividerColor,
     onBackground = DarkText,
     onSurface = DarkText,
     onSurfaceVariant = MutedText,
@@ -31,12 +31,13 @@ private val LightColorScheme = lightColorScheme(
     onErrorContainer = Color(0xFF8B1824)
 )
 
+// Use the same corner scale across cards, dialogs, fields, chips and action surfaces.
 private val AppShapes = Shapes(
     extraSmall = RoundedCornerShape(6.dp),
     small = RoundedCornerShape(10.dp),
-    medium = RoundedCornerShape(12.dp),
-    large = RoundedCornerShape(16.dp),
-    extraLarge = RoundedCornerShape(20.dp)
+    medium = RoundedCornerShape(14.dp),
+    large = RoundedCornerShape(18.dp),
+    extraLarge = RoundedCornerShape(22.dp)
 )
 
 @Composable
@@ -46,7 +47,7 @@ fun SmartInvoicingTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colorScheme = LightColorScheme,
+        colorScheme = AppColorScheme,
         typography = Typography,
         shapes = AppShapes,
         content = content
