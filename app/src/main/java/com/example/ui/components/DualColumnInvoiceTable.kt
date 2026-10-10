@@ -60,9 +60,9 @@ fun DualColumnInvoiceTable(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .border(1.dp, CellBorderColor, RoundedCornerShape(12.dp))
+            .border(1.dp, CellBorderColor, MaterialTheme.shapes.medium)
             .testTag("dual_column_invoice_table"),
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
