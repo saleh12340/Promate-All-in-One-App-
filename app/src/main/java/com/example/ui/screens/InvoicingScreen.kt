@@ -244,7 +244,10 @@ fun InvoicingScreen(
                             .testTag("top_price_input"),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = CellBorderColor,
-                            focusedBorderColor = PrimaryBlue
+                            focusedBorderColor = PrimaryBlue,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color(0xFFFAFCFF),
+                            cursorColor = PrimaryBlue
                         )
                     )
 
@@ -267,14 +270,17 @@ fun InvoicingScreen(
                                 )
                             }
                         },
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .weight(1.8f)
-                            .height(50.dp)
+                            .height(56.dp)
                             .testTag("top_details_input"),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = CellBorderColor,
-                            focusedBorderColor = PrimaryBlue
+                            focusedBorderColor = PrimaryBlue,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color(0xFFFAFCFF),
+                            cursorColor = PrimaryBlue
                         )
                     )
 
@@ -285,14 +291,17 @@ fun InvoicingScreen(
                         placeholder = { Text("1", fontSize = 11.sp, textAlign = TextAlign.Center) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .weight(0.7f)
-                            .height(50.dp)
+                            .height(56.dp)
                             .testTag("top_qty_input"),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = CellBorderColor,
-                            focusedBorderColor = PrimaryBlue
+                            focusedBorderColor = PrimaryBlue,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color(0xFFFAFCFF),
+                            cursorColor = PrimaryBlue
                         )
                     )
 
@@ -303,14 +312,17 @@ fun InvoicingScreen(
                         placeholder = { Text("القيمة الإجمالية", fontSize = 11.sp, textAlign = TextAlign.Center) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .weight(1.2f)
-                            .height(50.dp)
+                            .height(56.dp)
                             .testTag("top_total_input"),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = CellBorderColor,
-                            focusedBorderColor = PrimaryBlue
+                            focusedBorderColor = PrimaryBlue,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color(0xFFFAFCFF),
+                            cursorColor = PrimaryBlue
                         )
                     )
                 }
@@ -324,7 +336,7 @@ fun InvoicingScreen(
                         .fillMaxWidth()
                         .height(46.dp)
                         .testTag("add_item_button"),
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
                 ) {
                     Icon(
@@ -351,7 +363,7 @@ fun InvoicingScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .border(1.dp, CellBorderColor, RoundedCornerShape(10.dp)),
-            shape = RoundedCornerShape(10.dp),
+            shape = RoundedCornerShape(14.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
             Column(
@@ -445,10 +457,13 @@ fun InvoicingScreen(
                             .height(48.dp),
                         placeholder = { Text("اسم العميل", fontSize = 13.sp) },
                         singleLine = true,
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = CellBorderColor,
-                            focusedBorderColor = PrimaryBlue
+                            focusedBorderColor = PrimaryBlue,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color(0xFFFAFCFF),
+                            cursorColor = PrimaryBlue
                         )
                     )
 
