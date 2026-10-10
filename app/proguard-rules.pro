@@ -28,7 +28,5 @@
 -keepclassmembers class * {
     @com.squareup.moshi.Json <fields>;
 }
--keep class com.squareup.moshi.** { *; }
--keep class com.google.firebase.ai.** { *; }
 -dontwarn javax.annotation.**
 -dontwarn org.codehaus.mojo.animal_sniffer.**
