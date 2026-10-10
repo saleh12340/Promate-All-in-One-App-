@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.Customer
 import com.example.service.EscPos58mmPrinterService
+import com.example.ui.components.QuickAddCustomerDialog
 import com.example.ui.theme.CoralDebit
 import com.example.ui.theme.GreenCredit
 import com.example.ui.viewmodel.AccountingViewModel

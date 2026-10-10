@@ -32,7 +32,7 @@ data class InvoiceItemDraft(
     val unitPriceStr: String = ""
 ) {
     val quantity: Double
-        get() = quantityStr.toDoubleOrNull() ?: 0.0
+        get() = quantityStr.toDoubleOrNull() ?: 1.0
 
     val unitPrice: Double
         get() = unitPriceStr.toDoubleOrNull() ?: 0.0
@@ -43,6 +43,7 @@ data class InvoiceItemDraft(
 
 sealed class VoiceTarget {
     data class InvoiceItemDescription(val index: Int) : VoiceTarget()
+    object TopItemDetails : VoiceTarget()
     object VoucherStatement : VoiceTarget()
     object InvoiceNotes : VoiceTarget()
     object CustomerName : VoiceTarget()
@@ -52,6 +53,10 @@ class AccountingViewModel(application: Application) : AndroidViewModel(applicati
     private val database = AppDatabase.getDatabase(application)
     val repository = AccountingRepository(database)
     val audioService = AudioTranscriptionService(application)
+
+    // Store profile info
+    val storeName = MutableStateFlow("بقالة العزي")
+    val storePhone = MutableStateFlow("776425052")
 
     // Data streams
     val customers: StateFlow<List<Customer>> = repository.allCustomers
@@ -76,19 +81,40 @@ class AccountingViewModel(application: Application) : AndroidViewModel(applicati
     val voucherStatement = MutableStateFlow("")
     val isVoucherSaving = MutableStateFlow(false)
 
+    // Top Input Section Fields (سعر الواحدة, التفاصيل, العدد, القيمة الإجمالية)
+    val topItemUnitPrice = MutableStateFlow("")
+    val topItemDetails = MutableStateFlow("")
+    val topItemQty = MutableStateFlow("1")
+    val topItemTotal = MutableStateFlow("")
+
     // Invoicing Engine State
-    val invoiceNumber = MutableStateFlow("INV-0001")
+    val invoiceNumber = MutableStateFlow("1118")
     val invoiceCustomer = MutableStateFlow<Customer?>(null)
-    val invoiceCustomerName = MutableStateFlow("")
+    val invoiceCustomerName = MutableStateFlow("سليمان البرعسي")
     val paymentType = MutableStateFlow(PaymentType.CASH)
     val invoiceNotes = MutableStateFlow("")
     val paidAmountStr = MutableStateFlow("")
 
-    // Auto-expanding rows: starts with 2 default rows
+    // Auto-expanding rows list: initialized with realistic demo items from screenshot
     private val _invoiceRows = MutableStateFlow(
         listOf(
-            InvoiceItemDraft(),
-            InvoiceItemDraft()
+            InvoiceItemDraft(description = "كيس بر", quantityStr = "1", unitPriceStr = "13500"),
+            InvoiceItemDraft(description = "احذي حمام", quantityStr = "1", unitPriceStr = "800"),
+            InvoiceItemDraft(description = "خميره كبير", quantityStr = "1", unitPriceStr = "900"),
+            InvoiceItemDraft(description = "شحم طبي كبير", quantityStr = "1", unitPriceStr = "1000"),
+            InvoiceItemDraft(description = "نص سكر", quantityStr = "1", unitPriceStr = "10900"),
+            InvoiceItemDraft(description = "قشر", quantityStr = "1", unitPriceStr = "1000"),
+            InvoiceItemDraft(description = "حلبه", quantityStr = "1", unitPriceStr = "300"),
+            InvoiceItemDraft(description = "نص صلصه", quantityStr = "1", unitPriceStr = "1300"),
+            InvoiceItemDraft(description = "شاهي ربع", quantityStr = "2", unitPriceStr = "900"),
+            InvoiceItemDraft(description = "دبه زيت", quantityStr = "1", unitPriceStr = "4800"),
+            InvoiceItemDraft(description = "قطمه رز عايدي", quantityStr = "1", unitPriceStr = "3800"),
+            InvoiceItemDraft(description = "سمن الماس", quantityStr = "1", unitPriceStr = "1700"),
+            InvoiceItemDraft(description = "حوايج وهرد", quantityStr = "1", unitPriceStr = "1400"),
+            InvoiceItemDraft(description = "كفف و2كوافي", quantityStr = "1", unitPriceStr = "1200"),
+            InvoiceItemDraft(description = "قطمه رز بسمتي", quantityStr = "1", unitPriceStr = "4000"),
+            InvoiceItemDraft(description = "مقوش عاج", quantityStr = "1", unitPriceStr = "500"),
+            InvoiceItemDraft(description = "قطمه صابون", quantityStr = "1", unitPriceStr = "4700")
         )
     )
     val invoiceRows: StateFlow<List<InvoiceItemDraft>> = _invoiceRows.asStateFlow()
@@ -104,13 +130,70 @@ class AccountingViewModel(application: Application) : AndroidViewModel(applicati
     val currentInvoiceForPrint = MutableStateFlow<Invoice?>(null)
     val currentItemsForPrint = MutableStateFlow<List<InvoiceItem>>(emptyList())
 
-    val storeName = MutableStateFlow("مؤسسة الرواد التجارية")
-    val storePhone = MutableStateFlow("777000111")
-
     init {
         viewModelScope.launch {
             repository.seedInitialDataIfNeeded()
-            invoiceNumber.value = repository.getNextInvoiceNumber()
+            val nextNum = repository.getNextInvoiceNumber().replace("INV-", "")
+            if (nextNum.isNotBlank()) {
+                invoiceNumber.value = nextNum
+            }
+        }
+    }
+
+    // Add Item from the 4 top boxes into invoice table
+    fun addTopItemToInvoice() {
+        val details = topItemDetails.value.trim()
+        val unitPrice = topItemUnitPrice.value.toDoubleOrNull() ?: 0.0
+        val qty = topItemQty.value.toDoubleOrNull() ?: 1.0
+
+        if (details.isBlank()) {
+            Toast.makeText(getApplication(), "يرجى كتابة تفاصيل / اسم الصنف", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val newItem = InvoiceItemDraft(
+            description = details,
+            quantityStr = if (qty % 1.0 == 0.0) String.format(java.util.Locale.US, "%.0f", qty) else qty.toString(),
+            unitPriceStr = if (unitPrice > 0) String.format(java.util.Locale.US, "%.0f", unitPrice) else ""
+        )
+
+        val currentList = _invoiceRows.value.toMutableList()
+        currentList.add(newItem)
+        _invoiceRows.value = currentList
+
+        // Clear top fields for next quick entry
+        topItemDetails.value = ""
+        topItemUnitPrice.value = ""
+        topItemQty.value = "1"
+        topItemTotal.value = ""
+
+        Toast.makeText(getApplication(), "تمت إضافة الصنف: $details", Toast.LENGTH_SHORT).show()
+    }
+
+    // Auto calculate top total when price or qty changes
+    fun onTopUnitPriceChanged(price: String) {
+        topItemUnitPrice.value = price
+        val p = price.toDoubleOrNull() ?: 0.0
+        val q = topItemQty.value.toDoubleOrNull() ?: 1.0
+        val total = p * q
+        topItemTotal.value = if (total > 0) EscPos58mmPrinterService.formatAmount(total) else ""
+    }
+
+    fun onTopQtyChanged(qty: String) {
+        topItemQty.value = qty
+        val p = topItemUnitPrice.value.toDoubleOrNull() ?: 0.0
+        val q = qty.toDoubleOrNull() ?: 1.0
+        val total = p * q
+        topItemTotal.value = if (total > 0) EscPos58mmPrinterService.formatAmount(total) else ""
+    }
+
+    fun onTopTotalChanged(totalStr: String) {
+        topItemTotal.value = totalStr
+        val t = totalStr.replace(",", "").toDoubleOrNull() ?: 0.0
+        val q = topItemQty.value.toDoubleOrNull() ?: 1.0
+        if (q > 0) {
+            val p = t / q
+            topItemUnitPrice.value = if (p > 0) String.format(java.util.Locale.US, "%.0f", p) else ""
         }
     }
 
@@ -151,7 +234,6 @@ class AccountingViewModel(application: Application) : AndroidViewModel(applicati
                 amount = amount,
                 statement = stmt
             )
-            // refresh customer object
             val updated = database.customerDao().getCustomerByIdSync(customer.id)
             _selectedCustomer.value = updated
 
@@ -162,7 +244,7 @@ class AccountingViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    // --- Interactive Invoicing Engine & Auto-Expanding Rows ---
+    // --- Table Rows Management ---
     fun updateInvoiceRow(index: Int, description: String? = null, quantityStr: String? = null, unitPriceStr: String? = null) {
         val currentList = _invoiceRows.value.toMutableList()
         if (index !in currentList.indices) return
@@ -175,8 +257,6 @@ class AccountingViewModel(application: Application) : AndroidViewModel(applicati
         )
         currentList[index] = newItem
 
-        // Auto-Expanding Rows logic:
-        // If the user modified the last row and it has non-blank description or unitPrice, automatically append a new row
         if (index == currentList.size - 1 && (newItem.description.isNotBlank() || newItem.unitPrice > 0)) {
             currentList.add(InvoiceItemDraft())
         }
@@ -186,10 +266,9 @@ class AccountingViewModel(application: Application) : AndroidViewModel(applicati
 
     fun removeInvoiceRow(index: Int) {
         val currentList = _invoiceRows.value.toMutableList()
-        if (currentList.size > 1 && index in currentList.indices) {
+        if (index in currentList.indices) {
             currentList.removeAt(index)
-            // Ensure at least 2 rows
-            while (currentList.size < 2) {
+            if (currentList.isEmpty()) {
                 currentList.add(InvoiceItemDraft())
             }
             _invoiceRows.value = currentList
@@ -198,20 +277,29 @@ class AccountingViewModel(application: Application) : AndroidViewModel(applicati
 
     fun resetInvoiceForm() {
         viewModelScope.launch {
-            invoiceNumber.value = repository.getNextInvoiceNumber()
+            val count = repository.getNextInvoiceNumber().replace("INV-", "")
+            invoiceNumber.value = count.ifBlank { "1119" }
             invoiceCustomer.value = null
-            invoiceCustomerName.value = ""
+            invoiceCustomerName.value = "سليمان البرعسي"
             paymentType.value = PaymentType.CASH
             invoiceNotes.value = ""
             paidAmountStr.value = ""
-            _invoiceRows.value = listOf(InvoiceItemDraft(), InvoiceItemDraft())
+            _invoiceRows.value = listOf(
+                InvoiceItemDraft(description = "", quantityStr = "1", unitPriceStr = ""),
+                InvoiceItemDraft(description = "", quantityStr = "1", unitPriceStr = "")
+            )
+            topItemDetails.value = ""
+            topItemUnitPrice.value = ""
+            topItemQty.value = "1"
+            topItemTotal.value = ""
+            Toast.makeText(getApplication(), "تم إنشاء فاتورة جديدة", Toast.LENGTH_SHORT).show()
         }
     }
 
     fun saveInvoice(onSuccess: (Long) -> Unit) {
         val validItems = _invoiceRows.value.filter { it.description.isNotBlank() && it.totalPrice > 0 }
         if (validItems.isEmpty()) {
-            Toast.makeText(getApplication(), "يرجى إدخال صنف واحد على الأقل", Toast.LENGTH_SHORT).show()
+            Toast.makeText(getApplication(), "يرجى إضافة صنف واحد على الأقل", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -249,7 +337,6 @@ class AccountingViewModel(application: Application) : AndroidViewModel(applicati
             currentInvoiceForPrint.value = invoice.copy(id = invoiceId)
             currentItemsForPrint.value = invoiceItemList
 
-            // Render 58mm preview
             val bmp = EscPos58mmPrinterService.renderReceiptBitmap(
                 storeName = storeName.value,
                 storePhone = storePhone.value,
@@ -259,7 +346,6 @@ class AccountingViewModel(application: Application) : AndroidViewModel(applicati
             previewReceiptBitmap.value = bmp
             showReceiptDialog.value = true
 
-            resetInvoiceForm()
             onSuccess(invoiceId)
         }
     }
@@ -306,6 +392,9 @@ class AccountingViewModel(application: Application) : AndroidViewModel(applicati
     private fun applyTranscribedText(target: VoiceTarget, text: String) {
         val clean = text.trim()
         when (target) {
+            VoiceTarget.TopItemDetails -> {
+                topItemDetails.value = clean
+            }
             is VoiceTarget.InvoiceItemDescription -> {
                 updateInvoiceRow(target.index, description = clean)
             }
@@ -321,7 +410,6 @@ class AccountingViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    // --- Thermal Print & PDF Export ---
     fun openReceiptForInvoice(invoice: Invoice) {
         viewModelScope.launch {
             val items = repository.getInvoiceItemsSync(invoice.id)
@@ -337,15 +425,5 @@ class AccountingViewModel(application: Application) : AndroidViewModel(applicati
             previewReceiptBitmap.value = bmp
             showReceiptDialog.value = true
         }
-    }
-
-    fun generatePdf(invoice: Invoice, items: List<InvoiceItem>): File {
-        return PdfReceiptExporter.generateInvoicePdf(
-            context = getApplication(),
-            storeName = storeName.value,
-            storePhone = storePhone.value,
-            invoice = invoice,
-            items = items
-        )
     }
 }

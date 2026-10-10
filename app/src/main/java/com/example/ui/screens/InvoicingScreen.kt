@@ -21,28 +21,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Payments
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Print
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -65,36 +62,44 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import com.example.data.model.Customer
 import com.example.data.model.PaymentType
 import com.example.service.EscPos58mmPrinterService
-import com.example.ui.components.InvoiceTable
-import com.example.ui.theme.CoralDebit
-import com.example.ui.theme.GreenCredit
+import com.example.ui.components.DualColumnInvoiceTable
+import com.example.ui.theme.CellBorderColor
+import com.example.ui.theme.CoralRed
+import com.example.ui.theme.DarkText
+import com.example.ui.theme.LightBluePill
+import com.example.ui.theme.NavyHeader
+import com.example.ui.theme.PrimaryBlue
+import com.example.ui.theme.TextBlue
 import com.example.ui.viewmodel.AccountingViewModel
 import com.example.ui.viewmodel.VoiceTarget
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InvoicingScreen(
     viewModel: AccountingViewModel,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val customers by viewModel.customers.collectAsState()
+    val storeName by viewModel.storeName.collectAsState()
+    val storePhone by viewModel.storePhone.collectAsState()
     val invoiceNumber by viewModel.invoiceNumber.collectAsState()
-    val selectedCustomer by viewModel.invoiceCustomer.collectAsState()
-    val customerNameText by viewModel.invoiceCustomerName.collectAsState()
+    val customerName by viewModel.invoiceCustomerName.collectAsState()
     val paymentType by viewModel.paymentType.collectAsState()
     val rows by viewModel.invoiceRows.collectAsState()
-    val notes by viewModel.invoiceNotes.collectAsState()
-    val paidAmountStr by viewModel.paidAmountStr.collectAsState()
 
-    var showCustomerDialog by remember { mutableStateOf(false) }
-    var customerDropdownExpanded by remember { mutableStateOf(false) }
+    // 4 Top input boxes
+    val topUnitPrice by viewModel.topItemUnitPrice.collectAsState()
+    val topDetails by viewModel.topItemDetails.collectAsState()
+    val topQty by viewModel.topItemQty.collectAsState()
+    val topTotal by viewModel.topItemTotal.collectAsState()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -104,507 +109,473 @@ fun InvoicingScreen(
         }
     }
 
-    fun requestVoiceTarget(target: VoiceTarget) {
+    fun requestVoiceForDetails() {
         val hasPermission = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.RECORD_AUDIO
         ) == PackageManager.PERMISSION_GRANTED
 
         if (hasPermission) {
-            viewModel.startVoiceInput(target)
+            viewModel.startVoiceInput(VoiceTarget.TopItemDetails)
         } else {
             permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
         }
     }
 
     val grandTotal = rows.filter { it.description.isNotBlank() && it.totalPrice > 0 }.sumOf { it.totalPrice }
-    val paid = if (paymentType == PaymentType.CASH) grandTotal else (paidAmountStr.toDoubleOrNull() ?: 0.0)
-    val remaining = (grandTotal - paid).coerceAtLeast(0.0)
+    val currentDateStr = remember {
+        SimpleDateFormat("yyyy/MM/dd", Locale.US).format(Date())
+    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(14.dp)
+            .padding(10.dp)
             .testTag("invoicing_screen")
     ) {
-        // TOP OF SCREEN UTILIZATION: Top Header & Invoice Controls Card
+        // 1. TOP BAR (3 Circular Icons + Invoice Title)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Action Icons on Left
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Surface(
+                    shape = CircleShape,
+                    color = Color.White,
+                    shadowElevation = 2.dp,
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clickable { viewModel.resetInvoiceForm() }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "فاتورة جديدة",
+                            tint = DarkText,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = CircleShape,
+                    color = Color.White,
+                    shadowElevation = 2.dp,
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clickable {
+                            viewModel.saveInvoice {
+                                Toast.makeText(context, "معاينة الطباعة الحرارية", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.Print,
+                            contentDescription = "طباعة سريعة",
+                            tint = CoralRed,
+                            modifier = Modifier.size(19.dp)
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = CircleShape,
+                    color = Color.White,
+                    shadowElevation = 2.dp,
+                    modifier = Modifier.size(38.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.Category,
+                            contentDescription = "أصناف",
+                            tint = PrimaryBlue,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+
+            // Title on Right
+            Text(
+                text = "فاتورة #$invoiceNumber - $storeName",
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold,
+                color = NavyHeader
+            )
+        }
+
+        // 2. TOP INPUT CARD (4 Rounded Input Boxes + Big Blue Add Button)
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, CellBorderColor, RoundedCornerShape(14.dp)),
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp)
+                    .padding(10.dp)
             ) {
-                // Top row: Invoice #, Date, Reset Form
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                    ) {
-                        Text(
-                            text = "فاتورة: $invoiceNumber",
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "نظام الفواتير الذكي",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        IconButton(
-                            onClick = { viewModel.resetInvoiceForm() },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Refresh,
-                                contentDescription = "تفريغ الفاتورة",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Payment Type Selector (نقدي / آجل)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    FilterChip(
-                        selected = paymentType == PaymentType.CASH,
-                        onClick = { viewModel.paymentType.value = PaymentType.CASH },
-                        label = { Text("نقدي (كاش)", fontSize = 12.sp, fontWeight = FontWeight.Bold) },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.Payments,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = if (paymentType == PaymentType.CASH) GreenCredit else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = GreenCredit.copy(alpha = 0.15f),
-                            selectedLabelColor = GreenCredit
-                        ),
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    FilterChip(
-                        selected = paymentType == PaymentType.CREDIT,
-                        onClick = { viewModel.paymentType.value = PaymentType.CREDIT },
-                        label = { Text("آجل (حساب عميل)", fontSize = 12.sp, fontWeight = FontWeight.Bold) },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.CreditCard,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = if (paymentType == PaymentType.CREDIT) CoralDebit else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = CoralDebit.copy(alpha = 0.15f),
-                            selectedLabelColor = CoralDebit
-                        ),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Customer Selection Box
+                // Row of 4 input fields: سعر الواحدة | التفاصيل (مع ميكروفون) | 1 (العدد) | القيمة الإجمالية
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    ExposedDropdownMenuBox(
-                        expanded = customerDropdownExpanded,
-                        onExpandedChange = { customerDropdownExpanded = !customerDropdownExpanded },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        OutlinedTextField(
-                            value = selectedCustomer?.name ?: customerNameText,
-                            onValueChange = {
-                                viewModel.invoiceCustomer.value = null
-                                viewModel.invoiceCustomerName.value = it
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor()
-                                .testTag("invoice_customer_input"),
-                            placeholder = { Text("اختر العميل أو اكتب الاسم...", fontSize = 12.sp) },
-                            singleLine = true,
-                            leadingIcon = {
-                                Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(18.dp))
-                            },
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = customerDropdownExpanded)
-                            },
-                            shape = RoundedCornerShape(10.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                            )
+                    // سعر الواحدة
+                    OutlinedTextField(
+                        value = topUnitPrice,
+                        onValueChange = { viewModel.onTopUnitPriceChanged(it) },
+                        placeholder = { Text("سعر الواحدة", fontSize = 10.sp, textAlign = TextAlign.Center) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier
+                            .weight(1.1f)
+                            .height(50.dp)
+                            .testTag("top_price_input"),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = CellBorderColor,
+                            focusedBorderColor = PrimaryBlue
                         )
+                    )
 
-                        ExposedDropdownMenu(
-                            expanded = customerDropdownExpanded,
-                            onDismissRequest = { customerDropdownExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("عميل نقدي عام", fontWeight = FontWeight.Bold) },
-                                onClick = {
-                                    viewModel.invoiceCustomer.value = null
-                                    viewModel.invoiceCustomerName.value = "عميل نقدي"
-                                    customerDropdownExpanded = false
-                                }
-                            )
-                            customers.forEach { cust ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Column {
-                                            Text(cust.name, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
-                                            val bal = cust.currentBalance
-                                            Text(
-                                                text = "الرصيد: ${EscPos58mmPrinterService.formatAmount(bal)} ر.ي",
-                                                fontSize = 11.sp,
-                                                color = if (bal > 0) CoralDebit else GreenCredit
-                                            )
-                                        }
-                                    },
-                                    onClick = {
-                                        viewModel.invoiceCustomer.value = cust
-                                        viewModel.invoiceCustomerName.value = cust.name
-                                        customerDropdownExpanded = false
-                                    }
+                    // التفاصيل (with Voice Mic)
+                    OutlinedTextField(
+                        value = topDetails,
+                        onValueChange = { viewModel.topItemDetails.value = it },
+                        placeholder = { Text("التفاصيل", fontSize = 11.sp) },
+                        singleLine = true,
+                        trailingIcon = {
+                            IconButton(
+                                onClick = { requestVoiceForDetails() },
+                                modifier = Modifier.size(26.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Mic,
+                                    contentDescription = "صوت",
+                                    tint = PrimaryBlue,
+                                    modifier = Modifier.size(17.dp)
                                 )
                             }
+                        },
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier
+                            .weight(1.8f)
+                            .height(50.dp)
+                            .testTag("top_details_input"),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = CellBorderColor,
+                            focusedBorderColor = PrimaryBlue
+                        )
+                    )
+
+                    // العدد (1)
+                    OutlinedTextField(
+                        value = topQty,
+                        onValueChange = { viewModel.onTopQtyChanged(it) },
+                        placeholder = { Text("1", fontSize = 11.sp, textAlign = TextAlign.Center) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier
+                            .weight(0.7f)
+                            .height(50.dp)
+                            .testTag("top_qty_input"),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = CellBorderColor,
+                            focusedBorderColor = PrimaryBlue
+                        )
+                    )
+
+                    // القيمة الإجمالية
+                    OutlinedTextField(
+                        value = topTotal,
+                        onValueChange = { viewModel.onTopTotalChanged(it) },
+                        placeholder = { Text("القيمة الإجمالية", fontSize = 10.sp, textAlign = TextAlign.Center) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier
+                            .weight(1.2f)
+                            .height(50.dp)
+                            .testTag("top_total_input"),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = CellBorderColor,
+                            focusedBorderColor = PrimaryBlue
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // + إضافة الصنف إلى الفاتورة Button
+                Button(
+                    onClick = { viewModel.addTopItemToInvoice() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(46.dp)
+                        .testTag("add_item_button"),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "إضافة الصنف إلى الفاتورة",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // 3. INVOICE HEADER METADATA CARD (Store, Checkboxes, Invoice #, Date, Customer)
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, CellBorderColor, RoundedCornerShape(10.dp)),
+            shape = RoundedCornerShape(10.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                // Top Row: Store Name & Phone | Payment Mode [✓] نقداً [ ] آجل | رقم: 1118 | التاريخ
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Right: Store Name & Phone
+                    Text(
+                        text = "$storeName ج: $storePhone",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        color = NavyHeader
+                    )
+
+                    // Payment Type Checkboxes: [✓] نقداً  [ ] آجل
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { viewModel.paymentType.value = PaymentType.CASH }
+                        ) {
+                            Text(
+                                text = if (paymentType == PaymentType.CASH) "[✓] نقداً" else "[ ] نقداً",
+                                fontSize = 11.sp,
+                                fontWeight = if (paymentType == PaymentType.CASH) FontWeight.Bold else FontWeight.Normal,
+                                color = if (paymentType == PaymentType.CASH) PrimaryBlue else DarkText
+                            )
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { viewModel.paymentType.value = PaymentType.CREDIT }
+                        ) {
+                            Text(
+                                text = if (paymentType == PaymentType.CREDIT) "[✓] آجل" else "[ ] آجل",
+                                fontSize = 11.sp,
+                                fontWeight = if (paymentType == PaymentType.CREDIT) FontWeight.Bold else FontWeight.Normal,
+                                color = if (paymentType == PaymentType.CREDIT) CoralRed else DarkText
+                            )
                         }
                     }
 
-                    // Quick Add Customer Button
-                    IconButton(
-                        onClick = { showCustomerDialog = true },
-                        modifier = Modifier
-                            .size(46.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer)
+                    // Invoice # and Date
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Icon(
-                            Icons.Default.Add,
-                            contentDescription = "إضافة عميل جديد",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = CoralRed.copy(alpha = 0.1f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, CoralRed)
+                        ) {
+                            Text(
+                                text = "رقم: $invoiceNumber",
+                                color = CoralRed,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                        Text(
+                            text = "التاريخ: $currentDateStr",
+                            fontSize = 10.sp,
+                            color = DarkText
                         )
                     }
+                }
 
-                    // Voice Input Button for Customer Name
-                    IconButton(
-                        onClick = { requestVoiceTarget(VoiceTarget.CustomerName) },
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Bottom Row: Customer Name input & Quick Pill
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = customerName,
+                        onValueChange = { viewModel.invoiceCustomerName.value = it },
                         modifier = Modifier
-                            .size(46.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .weight(1f)
+                            .height(42.dp),
+                        placeholder = { Text("اسم العميل...", fontSize = 11.sp) },
+                        singleLine = true,
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = CellBorderColor,
+                            focusedBorderColor = PrimaryBlue
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = LightBluePill,
+                        modifier = Modifier.clickable {
+                            // customer selected
+                        }
                     ) {
-                        Icon(
-                            Icons.Default.Mic,
-                            contentDescription = "إملاء اسم العميل",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
+                        Text(
+                            text = customerName.ifBlank { "سليمان البرعسي" },
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryBlue,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                         )
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // INTERACTIVE INVOICING TABLE (Auto-expanding rows, clean quantity, text wrapping)
-        Text(
-            text = "جدول الأصناف (تمدد تلقائي للأسطر):",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        InvoiceTable(
+        // 4. DUAL COLUMN INVOICE TABLE (Matching exact screenshot layout)
+        DualColumnInvoiceTable(
             rows = rows,
-            onUpdateRow = { index, desc, qty, price ->
-                viewModel.updateInvoiceRow(index, desc, qty, price)
-            },
-            onRemoveRow = { index ->
-                viewModel.removeInvoiceRow(index)
-            },
-            onVoiceClick = { index ->
-                requestVoiceTarget(VoiceTarget.InvoiceItemDescription(index))
-            }
+            onRemoveRow = { viewModel.removeInvoiceRow(it) }
         )
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
-        // TOTALS & PAYMENT SETTINGS CARD
+        // 5. BOTTOM TOTAL & ACTIONS CARD
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, CellBorderColor, RoundedCornerShape(16.dp)),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(14.dp)
             ) {
-                // Total Summary Row
+                // Grand Total Row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "الإجمالي الكلي للفاتورة:",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
                         text = "${EscPos58mmPrinterService.formatAmount(grandTotal)} ر.ي",
-                        fontSize = 18.sp,
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = TextBlue
                     )
-                }
 
-                // If Credit, show Paid and Remaining inputs
-                AnimatedVisibility(visible = paymentType == PaymentType.CREDIT) {
-                    Column(modifier = Modifier.padding(top = 10.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            OutlinedTextField(
-                                value = paidAmountStr,
-                                onValueChange = { viewModel.paidAmountStr.value = it },
-                                modifier = Modifier.weight(1f),
-                                label = { Text("المدفوع نقداً (عربون)", fontSize = 11.sp) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                shape = RoundedCornerShape(10.dp),
-                                singleLine = true
-                            )
-
-                            Surface(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(56.dp),
-                                shape = RoundedCornerShape(10.dp),
-                                color = CoralDebit.copy(alpha = 0.12f)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(8.dp),
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Text("المتبقي الآجل:", fontSize = 10.sp, color = CoralDebit)
-                                    Text(
-                                        text = "${EscPos58mmPrinterService.formatAmount(remaining)} ر.ي",
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = CoralDebit
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Notes Field with Voice Dictation
-                OutlinedTextField(
-                    value = notes,
-                    onValueChange = { viewModel.invoiceNotes.value = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("ملاحظات الفاتورة أو شروط التسليم...", fontSize = 12.sp) },
-                    singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
-                    trailingIcon = {
-                        IconButton(onClick = { requestVoiceTarget(VoiceTarget.InvoiceNotes) }) {
-                            Icon(
-                                Icons.Default.Mic,
-                                contentDescription = "صوت",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // Primary Action Button: Save & Print 58mm Thermal
-                Button(
-                    onClick = {
-                        viewModel.saveInvoice {
-                            Toast.makeText(context, "تم حفظ الفاتورة بنجاح", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .testTag("save_invoice_button"),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Icon(Icons.Default.Print, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "حفظ وإصدار الفاتورة (طباعة 58mm)",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "المبلغ الإجمالي الكلي:",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DarkText
                     )
                 }
-            }
-        }
-    }
 
-    // Add Customer Quick Dialog
-    if (showCustomerDialog) {
-        QuickAddCustomerDialog(
-            onDismiss = { showCustomerDialog = false },
-            onAdd = { name, phone, openingBalance, notesText ->
-                viewModel.addCustomer(name, phone, openingBalance, notesText) { id ->
-                    val newCust = Customer(
-                        id = id,
-                        name = name,
-                        phone = phone,
-                        openingBalance = openingBalance,
-                        currentBalance = openingBalance
-                    )
-                    viewModel.invoiceCustomer.value = newCust
-                    viewModel.invoiceCustomerName.value = name
-                    showCustomerDialog = false
-                }
-            }
-        )
-    }
-}
+                Spacer(modifier = Modifier.height(12.dp))
 
-@Composable
-fun QuickAddCustomerDialog(
-    onDismiss: () -> Unit,
-    onAdd: (name: String, phone: String, openingBalance: Double, notes: String) -> Unit
-) {
-    var name by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var openingBalance by remember { mutableStateOf("") }
-    var notes by remember { mutableStateOf("") }
-
-    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier.fillMaxWidth(0.95f),
-            shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-            ) {
-                Text(
-                    text = "إضافة عميل جديد",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("اسم العميل *") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = phone,
-                    onValueChange = { phone = it },
-                    label = { Text("رقم الهاتف") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = openingBalance,
-                    onValueChange = { openingBalance = it },
-                    label = { Text("الرصيد الافتتاحي (ر.ي)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = notes,
-                    onValueChange = { notes = it },
-                    label = { Text("ملاحظات") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(18.dp))
-
+                // Action Buttons Row: [مشاركة] [طباعة حرارية] [حفظ]
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // مشاركة (Share)
                     OutlinedButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Text("إلغاء")
-                    }
-
-                    Button(
                         onClick = {
-                            if (name.isNotBlank()) {
-                                onAdd(name, phone, openingBalance.toDoubleOrNull() ?: 0.0, notes)
+                            viewModel.saveInvoice {
+                                Toast.makeText(context, "مشاركة الفاتورة كصورة أو PDF", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        enabled = name.isNotBlank(),
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
                     ) {
-                        Text("إضافة")
+                        Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("مشاركة", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    // طباعة حرارية (Thermal Print - Primary Blue Filled)
+                    Button(
+                        onClick = {
+                            viewModel.saveInvoice {
+                                Toast.makeText(context, "جاري إرسال أمر الطباعة الحرارية 58mm", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                        modifier = Modifier
+                            .weight(1.3f)
+                            .height(48.dp)
+                    ) {
+                        Icon(Icons.Default.Print, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("طباعة حرارية", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+
+                    // حفظ (Save)
+                    OutlinedButton(
+                        onClick = {
+                            viewModel.saveInvoice {
+                                Toast.makeText(context, "تم حفظ الفاتورة بنجاح", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                    ) {
+                        Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("حفظ", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }

@@ -2,22 +2,23 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val EmeraldPrimary = Color(0xFF1B4332)
-val EmeraldSecondary = Color(0xFF2D6A4F)
-val TealAccent = Color(0xFF40916C)
-val MintLight = Color(0xFFD8F3DC)
+// Vibrant Blue & Navy Theme matching user's exact screenshot design
+val PrimaryBlue = Color(0xFF0D6EFD)
+val PrimaryBlueHover = Color(0xFF0B5ED7)
+val NavyHeader = Color(0xFF15325B)
+val LightBluePill = Color(0xFFE7F1FF)
+val CellBorderColor = Color(0xFFCBD5E1)
 
+val TextBlue = Color(0xFF1D4ED8)
+val DarkText = Color(0xFF1E293B)
+val MutedText = Color(0xFF64748B)
+
+val BackgroundLight = Color(0xFFF1F5F9)
+val SurfaceWhite = Color(0xFFFFFFFF)
+val SurfaceCard = Color(0xFFF8FAFC)
+
+val CoralRed = Color(0xFFDC2626)
+val GreenSuccess = Color(0xFF16A34A)
+val CoralDebit = CoralRed
+val GreenCredit = GreenSuccess
 val GoldAccent = Color(0xFFC59B27)
-val CoralDebit = Color(0xFFBA1A1A)
-val GreenCredit = Color(0xFF198754)
-
-val SlateBackground = Color(0xFFF7F9F8)
-val SlateSurface = Color(0xFFFFFFFF)
-val SlateSurfaceVariant = Color(0xFFEFF3F1)
-val SlateOutline = Color(0xFFD0D7D3)
-
-val DarkBackground = Color(0xFF111714)
-val DarkSurface = Color(0xFF1A231F)
-val DarkSurfaceVariant = Color(0xFF24302A)
-val DarkEmerald = Color(0xFF52B788)
-val DarkMint = Color(0xFF74C69D)
