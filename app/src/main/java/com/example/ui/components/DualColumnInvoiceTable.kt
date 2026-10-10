@@ -22,6 +22,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -35,6 +36,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -50,6 +53,7 @@ import com.example.ui.viewmodel.InvoiceItemDraft
 fun DualColumnInvoiceTable(
     rows: List<InvoiceItemDraft>,
     onRemoveRow: (index: Int) -> Unit,
+    onUpdateRow: (index: Int, description: String?, quantityStr: String?, unitPriceStr: String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedItemIndex by remember { mutableStateOf<Int?>(null) }
@@ -134,28 +138,86 @@ fun DualColumnInvoiceTable(
         }
     }
 
-    // Delete item dialog when tapping a row
+    // Tap an invoice line to edit all its values or delete it.
     if (selectedItemIndex != null) {
         val idx = selectedItemIndex!!
         val item = rows.getOrNull(idx)
         if (item != null) {
+            var editDescription by remember(idx, item.id) { mutableStateOf(item.description) }
+            var editQty by remember(idx, item.id) { mutableStateOf(item.quantityStr) }
+            var editPrice by remember(idx, item.id) { mutableStateOf(item.unitPriceStr) }
+            var editTotal by remember(idx, item.id) {
+                mutableStateOf(if (item.totalPrice > 0) String.format(java.util.Locale.US, "%.0f", item.totalPrice) else "")
+            }
             AlertDialog(
                 onDismissRequest = { selectedItemIndex = null },
-                title = { Text("إدارة الصنف") },
-                text = { Text("هل تريد حذف الصنف \"${item.description}\" بقيمة ${EscPos58mmPrinterService.formatAmount(item.totalPrice)} ر.ي؟") },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            onRemoveRow(idx)
-                            selectedItemIndex = null
-                        }
-                    ) {
-                        Text("حذف الصنف", color = MaterialTheme.colorScheme.error)
+                title = { Text("تعديل الصنف") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = editTotal,
+                            onValueChange = { value ->
+                                editTotal = value
+                                val total = value.replace(",", "").toDoubleOrNull() ?: 0.0
+                                val qty = editQty.replace(",", "").toDoubleOrNull() ?: 1.0
+                                if (qty > 0) editPrice = if (total > 0) String.format(java.util.Locale.US, "%.2f", total / qty).trimEnd('0').trimEnd('.') else ""
+                            },
+                            label = { Text("القيمة الإجمالية") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            singleLine = true
+                        )
+                        OutlinedTextField(
+                            value = editQty,
+                            onValueChange = { value ->
+                                editQty = value
+                                val qty = value.replace(",", "").toDoubleOrNull() ?: 1.0
+                                val price = editPrice.replace(",", "").toDoubleOrNull() ?: 0.0
+                                editTotal = if (qty > 0 && price > 0) String.format(java.util.Locale.US, "%.2f", qty * price).trimEnd('0').trimEnd('.') else ""
+                            },
+                            label = { Text("الكمية") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            singleLine = true
+                        )
+                        OutlinedTextField(
+                            value = editDescription,
+                            onValueChange = { editDescription = it },
+                            label = { Text("التفاصيل") },
+                            singleLine = true
+                        )
+                        OutlinedTextField(
+                            value = editPrice,
+                            onValueChange = { value ->
+                                editPrice = value
+                                val price = value.replace(",", "").toDoubleOrNull() ?: 0.0
+                                val qty = editQty.replace(",", "").toDoubleOrNull() ?: 1.0
+                                editTotal = if (qty > 0 && price > 0) String.format(java.util.Locale.US, "%.2f", qty * price).trimEnd('0').trimEnd('.') else ""
+                            },
+                            label = { Text("سعر الواحدة") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            singleLine = true
+                        )
                     }
                 },
+                confirmButton = {
+                    TextButton(onClick = {
+                        val qty = editQty.replace(",", "").toDoubleOrNull() ?: 1.0
+                        val price = editPrice.replace(",", "").toDoubleOrNull() ?: 0.0
+                        onUpdateRow(
+                            idx,
+                            editDescription.trim(),
+                            if (qty % 1.0 == 0.0) String.format(java.util.Locale.US, "%.0f", qty) else qty.toString(),
+                            if (price > 0) String.format(java.util.Locale.US, "%.2f", price).trimEnd('0').trimEnd('.') else ""
+                        )
+                        selectedItemIndex = null
+                    }) { Text("حفظ التعديل") }
+                },
                 dismissButton = {
-                    TextButton(onClick = { selectedItemIndex = null }) {
-                        Text("إلغاء")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        TextButton(onClick = {
+                            onRemoveRow(idx)
+                            selectedItemIndex = null
+                        }) { Text("حذف", color = MaterialTheme.colorScheme.error) }
+                        TextButton(onClick = { selectedItemIndex = null }) { Text("إلغاء") }
                     }
                 }
             )
