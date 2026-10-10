@@ -82,7 +82,7 @@ fun InvoicesListScreen(
                 Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             },
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = MaterialTheme.shapes.medium,
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface
             )
@@ -164,7 +164,7 @@ private fun InvoiceCardItem(
     Card(
         onClick = onOpenPrint,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -182,7 +182,7 @@ private fun InvoiceCardItem(
                     Text(text = invoice.invoiceNumber, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
                     Spacer(modifier = Modifier.width(8.dp))
                     Surface(
-                        shape = RoundedCornerShape(6.dp),
+                        shape = MaterialTheme.shapes.extraSmall,
                         color = if (invoice.paymentType == PaymentType.CASH) GreenCredit.copy(alpha = 0.12f) else CoralDebit.copy(alpha = 0.12f)
                     ) {
                         Text(
