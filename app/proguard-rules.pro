@@ -19,3 +19,16 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+
+# Preserve runtime metadata used by Room and Moshi reflection/code generation.
+-keepattributes Signature,*Annotation*,InnerClasses,EnclosingMethod
+-keep class com.example.data.model.** { *; }
+-keep @com.squareup.moshi.JsonClass class * { *; }
+-keepclassmembers class * {
+    @com.squareup.moshi.Json <fields>;
+}
+-keep class com.squareup.moshi.** { *; }
+-keep class com.google.firebase.ai.** { *; }
+-dontwarn javax.annotation.**
+-dontwarn org.codehaus.mojo.animal_sniffer.**
