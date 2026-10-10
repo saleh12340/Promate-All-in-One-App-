@@ -89,7 +89,7 @@ fun ThermalReceiptDialog(
             modifier = Modifier
                 .fillMaxWidth(0.94f)
                 .padding(vertical = 24.dp),
-            shape = RoundedCornerShape(20.dp),
+            shape = MaterialTheme.shapes.extraLarge,
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(
@@ -122,9 +122,9 @@ fun ThermalReceiptDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(max = 380.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(MaterialTheme.shapes.small)
                         .background(Color(0xFFEBEBEB))
-                        .border(1.dp, Color(0xFFCCCCCC), RoundedCornerShape(8.dp))
+                        .border(1.dp, Color(0xFFCCCCCC), MaterialTheme.shapes.small)
                         .padding(8.dp)
                         .verticalScroll(rememberScrollState()),
                     contentAlignment = Alignment.TopCenter
@@ -156,7 +156,7 @@ fun ThermalReceiptDialog(
                             printReceiptBitmap(context, bitmap, invoice.invoiceNumber)
                         },
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(10.dp),
+                        shape = MaterialTheme.shapes.small,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         Icon(Icons.Default.Print, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -170,7 +170,7 @@ fun ThermalReceiptDialog(
                             shareReceiptBitmap(context, bitmap, invoice.invoiceNumber)
                         },
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(10.dp)
+                        shape = MaterialTheme.shapes.small
                     ) {
                         Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(4.dp))
@@ -197,7 +197,7 @@ fun ThermalReceiptDialog(
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp)
+                    shape = MaterialTheme.shapes.small
                 ) {
                     Icon(Icons.Default.PictureAsPdf, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
