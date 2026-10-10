@@ -131,7 +131,7 @@ fun InvoicingScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 8.dp, vertical = 2.dp)
+            .padding(start = 8.dp, top = 0.dp, end = 8.dp, bottom = 8.dp)
             .testTag("invoicing_screen")
     ) {
         // 1. TOP BAR (3 Circular Icons + Invoice Title)
