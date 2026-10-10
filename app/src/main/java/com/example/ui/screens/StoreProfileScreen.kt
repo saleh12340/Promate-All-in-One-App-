@@ -1,6 +1,13 @@
 package com.example.ui.screens
 
+import android.net.Uri
+import android.database.sqlite.SQLiteDatabase
+import android.os.Process
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,6 +52,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.local.AppDatabase
 import com.example.ui.theme.CellBorderColor
 import com.example.ui.theme.DarkText
 import com.example.ui.theme.PrimaryBlue
@@ -61,6 +69,30 @@ fun StoreProfileScreen(
 
     var name by remember(currentName) { mutableStateOf(currentName) }
     var phone by remember(currentPhone) { mutableStateOf(currentPhone) }
+    var showRestoreConfirmation by remember { mutableStateOf(false) }
+    val backupLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri: Uri? ->
+        if (uri != null) try {
+            val dbFile = context.getDatabasePath("smart_invoicing_db")
+            SQLiteDatabase.openDatabase(dbFile.path, null, SQLiteDatabase.OPEN_READWRITE).use { db -> db.rawQuery("PRAGMA wal_checkpoint(FULL)", null).use { it.moveToFirst() } }
+            context.contentResolver.openOutputStream(uri, "wt")!!.use { out -> dbFile.inputStream().use { it.copyTo(out) } }
+            Toast.makeText(context, "تم إنشاء النسخة الاحتياطية", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) { Toast.makeText(context, "تعذر إنشاء النسخة الاحتياطية", Toast.LENGTH_LONG).show() }
+    }
+    val restoreLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+        if (uri != null) try {
+            val temp = java.io.File(context.cacheDir, "restore_database.tmp")
+            context.contentResolver.openInputStream(uri)!!.use { input -> temp.outputStream().use { input.copyTo(it) } }
+            val check = SQLiteDatabase.openDatabase(temp.path, null, SQLiteDatabase.OPEN_READONLY)
+            val valid = check.rawQuery("PRAGMA integrity_check", null).use { it.moveToFirst() && it.getString(0) == "ok" }; check.close()
+            if (!valid) throw IllegalArgumentException("ملف النسخة غير صالح")
+            AppDatabase.closeDatabase()
+            val target = context.getDatabasePath("smart_invoicing_db")
+            java.io.File(target.path + "-wal").delete(); java.io.File(target.path + "-shm").delete()
+            temp.copyTo(target, overwrite = true)
+            Toast.makeText(context, "تمت الاستعادة، سيعاد تشغيل التطبيق", Toast.LENGTH_LONG).show()
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ Process.killProcess(Process.myPid()) }, 900)
+        } catch (e: Exception) { Toast.makeText(context, "فشلت الاستعادة: تحقق من ملف النسخة", Toast.LENGTH_LONG).show() }
+    }
 
     Column(
         modifier = modifier
