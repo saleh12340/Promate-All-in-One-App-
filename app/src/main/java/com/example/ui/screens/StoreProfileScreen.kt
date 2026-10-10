@@ -98,7 +98,7 @@ fun StoreProfileScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(14.dp)
+            .padding(start = 12.dp, top = 2.dp, end = 12.dp, bottom = 10.dp)
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
