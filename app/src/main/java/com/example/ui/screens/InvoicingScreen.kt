@@ -131,14 +131,14 @@ fun InvoicingScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(10.dp)
+            .padding(horizontal = 8.dp, vertical = 2.dp)
             .testTag("invoicing_screen")
     ) {
         // 1. TOP BAR (3 Circular Icons + Invoice Title)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp),
+                .padding(bottom = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -222,7 +222,7 @@ fun InvoicingScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp)
+                    .padding(horizontal = 6.dp, vertical = 7.dp)
             ) {
                 // Row of 4 input fields: سعر الواحدة | التفاصيل (مع ميكروفون) | 1 (العدد) | القيمة الإجمالية
                 Row(
@@ -240,7 +240,7 @@ fun InvoicingScreen(
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .weight(1.1f)
-                            .height(56.dp)
+                            .height(52.dp)
                             .testTag("top_price_input"),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = CellBorderColor,
@@ -273,7 +273,7 @@ fun InvoicingScreen(
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .weight(1.8f)
-                            .height(56.dp)
+                            .height(52.dp)
                             .testTag("top_details_input"),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = CellBorderColor,
@@ -294,7 +294,7 @@ fun InvoicingScreen(
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .weight(0.7f)
-                            .height(56.dp)
+                            .height(52.dp)
                             .testTag("top_qty_input"),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = CellBorderColor,
@@ -315,7 +315,7 @@ fun InvoicingScreen(
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .weight(1.2f)
-                            .height(56.dp)
+                            .height(52.dp)
                             .testTag("top_total_input"),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = CellBorderColor,
