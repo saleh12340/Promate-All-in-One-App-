@@ -114,6 +114,7 @@ fun TopInputActionBar(
                     onValueChange = onAmountChange,
                     modifier = Modifier
                         .weight(1.1f)
+                        .height(48.dp)
                         .testTag("voucher_amount_input"),
                     placeholder = { Text("المبلغ (ر.ي)", fontSize = 12.sp) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -121,7 +122,9 @@ fun TopInputActionBar(
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = if (selectedType == VoucherType.RECEIPT) GreenCredit else CoralDebit,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        unfocusedBorderColor = com.example.ui.theme.CellBorderColor,
+                        focusedContainerColor = com.example.ui.theme.InputFill,
+                        unfocusedContainerColor = com.example.ui.theme.InputFill
                     )
                 )
 
@@ -131,6 +134,7 @@ fun TopInputActionBar(
                     onValueChange = onStatementChange,
                     modifier = Modifier
                         .weight(1.6f)
+                        .height(48.dp)
                         .testTag("voucher_statement_input"),
                     placeholder = { Text("البيان / ملاحظة", fontSize = 12.sp) },
                     singleLine = true,
