@@ -118,117 +118,86 @@ object EscPos58mmPrinterService {
         invoice: Invoice,
         items: List<InvoiceItem>
     ): Bitmap {
-        val width = 384 // 58mm standard width at 203 DPI (dots per inch)
-        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        val width = 384
+        val margin = 18f
+        val contentWidth = width - margin * 2
+        fun makePaint(size: Float, bold: Boolean = false) = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.BLACK
-            textSize = 20f
-            typeface = Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL)
+            textSize = size
+            textAlign = Paint.Align.RIGHT
+            typeface = Typeface.create(Typeface.DEFAULT, if (bold) Typeface.BOLD else Typeface.NORMAL)
         }
-        val boldPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.BLACK
-            textSize = 22f
-            typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
+        val body = makePaint(20f)
+        val bold = makePaint(21f, true)
+        val title = makePaint(27f, true)
+        val divider = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; strokeWidth = 1.5f }
+        fun wrap(text: String, paint: Paint, maxWidth: Float): List<String> {
+            if (text.isBlank()) return listOf("—")
+            val lines = mutableListOf<String>()
+            var rest = text.trim()
+            while (rest.isNotEmpty()) {
+                val count = paint.breakText(rest, true, maxWidth, null).coerceAtLeast(1)
+                var cut = count.coerceAtMost(rest.length)
+                if (cut < rest.length) {
+                    val space = rest.lastIndexOf(' ', cut - 1)
+                    if (space > 0) cut = space
+                }
+                lines.add(rest.substring(0, cut).trim())
+                rest = rest.substring(cut).trim()
+            }
+            return lines
         }
-        val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.BLACK
-            textSize = 26f
-            typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
-        }
-        val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.DKGRAY
-            strokeWidth = 2f
-        }
-
-        // Measure estimated height
-        val baseHeight = 360 + (items.size * 54) + 160
-        val height = baseHeight.coerceAtLeast(400)
-
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val dateStr = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.US).format(Date(invoice.createdAt))
+        val height = 260 + items.sumOf { wrap(it.description, bold, contentWidth.toFloat()).size * 25 + 38 } +
+            (if (storePhone.isNotBlank()) 28 else 0) +
+            (if (invoice.paidAmount > 0) 28 else 0) +
+            (if (invoice.remainingAmount > 0) 28 else 0)
+        val bitmap = Bitmap.createBitmap(width, height.coerceAtLeast(420), Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.WHITE)
-
-        var y = 40f
-        fun drawCenterText(text: String, paint: Paint) {
-            val textWidth = paint.measureText(text)
-            val x = (width - textWidth) / 2f
-            canvas.drawText(text, x, y, paint)
-            y += paint.textSize + 12f
+        var y = 36f
+        val right = width - margin
+        fun drawRight(text: String, paint: Paint, gap: Float = paint.textSize + 8f) {
+            canvas.drawText(text, right, y, paint)
+            y += gap
         }
-
-        fun drawDivider() {
+        fun drawCenter(text: String, paint: Paint, gap: Float = paint.textSize + 8f) {
+            paint.textAlign = Paint.Align.CENTER
+            canvas.drawText(text, width / 2f, y, paint)
+            paint.textAlign = Paint.Align.RIGHT
+            y += gap
+        }
+        fun line() {
             y += 4f
-            canvas.drawLine(16f, y, width - 16f, y, linePaint)
-            y += 18f
+            canvas.drawLine(margin, y, width - margin, y, divider)
+            y += 19f
         }
 
-        // Header
-        drawCenterText(storeName, titlePaint)
-        if (storePhone.isNotBlank()) {
-            drawCenterText("هاتف: $storePhone", textPaint)
-        }
-        drawCenterText("فاتورة مبيعات (${invoice.paymentType.labelAr})", boldPaint)
-        drawDivider()
-
-        val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.US)
-        val dateStr = dateFormat.format(Date(invoice.createdAt))
-
-        // Info
-        canvas.drawText("رقم الفاتورة: ${invoice.invoiceNumber}", 16f, y, textPaint)
-        y += 28f
-        canvas.drawText("التاريخ: $dateStr", 16f, y, textPaint)
-        y += 28f
+        drawCenter(storeName.ifBlank { "فاتورة" }, title, 36f)
+        if (storePhone.isNotBlank()) drawCenter("هاتف: $storePhone", body)
+        drawCenter("فاتورة مبيعات • ${invoice.paymentType.labelAr}", bold)
+        line()
+        drawRight("رقم الفاتورة: ${invoice.invoiceNumber}", body)
+        drawRight("التاريخ: $dateStr", body)
         if (invoice.customerName.isNotBlank()) {
-            canvas.drawText("العميل: ${invoice.customerName}", 16f, y, textPaint)
-            y += 28f
+            wrap("العميل: ${invoice.customerName}", body, contentWidth).forEach { drawRight(it, body, 27f) }
         }
-        drawDivider()
-
-        // Table Header
-        canvas.drawText("الصنف", 16f, y, boldPaint)
-        canvas.drawText("الكمية", 170f, y, boldPaint)
-        canvas.drawText("السعر", 235f, y, boldPaint)
-        val totalLabelWidth = boldPaint.measureText("الإجمالي")
-        canvas.drawText("الإجمالي", width - 16f - totalLabelWidth, y, boldPaint)
-        y += 28f
-        drawDivider()
-
-        // Items
-        for (item in items) {
-            canvas.drawText(item.description, 16f, y, boldPaint)
-            y += 24f
-            val qStr = formatQuantity(item.quantity)
-            val pStr = formatAmount(item.unitPrice)
-            val tStr = formatAmount(item.totalPrice)
-            canvas.drawText(qStr, 170f, y, textPaint)
-            canvas.drawText(pStr, 235f, y, textPaint)
-            val itemTotalWidth = textPaint.measureText(tStr)
-            canvas.drawText(tStr, width - 16f - itemTotalWidth, y, textPaint)
-            y += 30f
+        line()
+        drawRight("الأصناف", bold, 27f)
+        line()
+        items.forEach { item ->
+            wrap(item.description, bold, contentWidth).forEach { drawRight(it, bold, 25f) }
+            val numeric = "الكمية: ${formatQuantity(item.quantity)}    السعر: ${formatAmount(item.unitPrice)}"
+            wrap(numeric, body, contentWidth).forEach { drawRight(it, body, 25f) }
+            drawRight("الإجمالي: ${formatAmount(item.totalPrice)} ر.ي", bold, 29f)
+            line()
         }
-        drawDivider()
-
-        // Totals
-        fun drawTotalLine(label: String, amount: Double) {
-            canvas.drawText(label, 16f, y, boldPaint)
-            val valStr = "${formatAmount(amount)} ر.ي"
-            val valWidth = boldPaint.measureText(valStr)
-            canvas.drawText(valStr, width - 16f - valWidth, y, boldPaint)
-            y += 30f
-        }
-
-        drawTotalLine("الإجمالي الكلي:", invoice.grandTotal)
-        if (invoice.paidAmount > 0) {
-            drawTotalLine("المدفوع:", invoice.paidAmount)
-        }
-        if (invoice.remainingAmount > 0) {
-            drawTotalLine("المتبقي الآجل:", invoice.remainingAmount)
-        }
-
-        drawDivider()
-        drawCenterText("شكراً لتعاملكم معنا", boldPaint)
-        drawCenterText("*** المحاسب الذكي ***", textPaint)
-
-        return bitmap
+        drawRight("الإجمالي الكلي: ${formatAmount(invoice.grandTotal)} ر.ي", title, 35f)
+        if (invoice.paidAmount > 0) drawRight("المدفوع: ${formatAmount(invoice.paidAmount)} ر.ي", body, 29f)
+        if (invoice.remainingAmount > 0) drawRight("المتبقي: ${formatAmount(invoice.remainingAmount)} ر.ي", bold, 30f)
+        line()
+        drawCenter("شكراً لتعاملكم معنا", bold)
+        return Bitmap.createBitmap(bitmap, 0, 0, width, y.toInt().coerceAtMost(bitmap.height).coerceAtLeast(1))
     }
 
     fun dashedLine(): String = "--------------------------------\n"
