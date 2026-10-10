@@ -41,7 +41,7 @@ fun QuickAddCustomerDialog(
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier.fillMaxWidth(0.95f),
-            shape = RoundedCornerShape(18.dp),
+            shape = MaterialTheme.shapes.large,
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(
@@ -63,7 +63,7 @@ fun QuickAddCustomerDialog(
                     onValueChange = { name = it },
                     label = { Text("اسم العميل *") },
                     singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
+                    shape = MaterialTheme.shapes.small,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -75,7 +75,7 @@ fun QuickAddCustomerDialog(
                     label = { Text("رقم الهاتف") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
+                    shape = MaterialTheme.shapes.small,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -87,7 +87,7 @@ fun QuickAddCustomerDialog(
                     label = { Text("الرصيد الافتتاحي (ر.ي)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
+                    shape = MaterialTheme.shapes.small,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -98,7 +98,7 @@ fun QuickAddCustomerDialog(
                     onValueChange = { notes = it },
                     label = { Text("ملاحظات") },
                     singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
+                    shape = MaterialTheme.shapes.small,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -111,7 +111,7 @@ fun QuickAddCustomerDialog(
                     OutlinedButton(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(10.dp)
+                        shape = MaterialTheme.shapes.small
                     ) {
                         Text("إلغاء")
                     }
@@ -124,7 +124,7 @@ fun QuickAddCustomerDialog(
                         },
                         enabled = name.isNotBlank(),
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(10.dp)
+                        shape = MaterialTheme.shapes.small
                     ) {
                         Text("إضافة")
                     }
