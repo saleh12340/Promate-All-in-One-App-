@@ -120,7 +120,7 @@ fun CustomerLedgerScreen(
         // Customer Selector & Current Balance Overview Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
+            shape = MaterialTheme.shapes.large,
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
@@ -148,7 +148,7 @@ fun CustomerLedgerScreen(
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = customerDropdownExpanded)
                         },
-                        shape = RoundedCornerShape(10.dp),
+                        shape = MaterialTheme.shapes.small,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
@@ -215,7 +215,7 @@ fun CustomerLedgerScreen(
                         val bal = customer.currentBalance
                         val isDebit = bal > 0
                         Surface(
-                            shape = RoundedCornerShape(8.dp),
+                            shape = MaterialTheme.shapes.small,
                             color = if (isDebit) CoralDebit.copy(alpha = 0.12f) else GreenCredit.copy(alpha = 0.12f)
                         ) {
                             Text(
