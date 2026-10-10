@@ -10,16 +10,22 @@ private val LightColorScheme = lightColorScheme(
     primary = PrimaryBlue,
     onPrimary = Color.White,
     primaryContainer = LightBluePill,
-    onPrimaryContainer = PrimaryBlue,
+    onPrimaryContainer = NavyHeader,
     secondary = NavyHeader,
     onSecondary = Color.White,
+    secondaryContainer = Color(0xFFE8EDF5),
+    onSecondaryContainer = NavyHeader,
     background = BackgroundLight,
     surface = SurfaceWhite,
     surfaceVariant = SurfaceCard,
     outline = CellBorderColor,
+    outlineVariant = Color(0xFFDCE4EE),
     onBackground = DarkText,
     onSurface = DarkText,
-    error = CoralRed
+    onSurfaceVariant = MutedText,
+    error = CoralRed,
+    errorContainer = Color(0xFFFFE9EC),
+    onErrorContainer = Color(0xFF8B1824)
 )
 
 @Composable
