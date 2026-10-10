@@ -222,7 +222,7 @@ fun InvoicingScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 6.dp, vertical = 7.dp)
+                    .padding(horizontal = 6.dp, vertical = 4.dp)
             ) {
                 // Row of 4 input fields: سعر الواحدة | التفاصيل (مع ميكروفون) | 1 (العدد) | القيمة الإجمالية
                 Row(
