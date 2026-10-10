@@ -3,6 +3,17 @@ package com.example.ui.components
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.RectF
+import android.graphics.pdf.PdfDocument
+import android.os.Bundle
+import android.os.CancellationSignal
+import android.os.ParcelFileDescriptor
+import android.print.PageRange
+import android.print.PrintAttributes
+import android.print.PrintDocumentAdapter
+import android.print.PrintDocumentInfo
+import android.print.PrintManager
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -56,6 +67,7 @@ import com.example.service.EscPos58mmPrinterService
 import com.example.service.PdfReceiptExporter
 import java.io.File
 import java.io.FileOutputStream
+import java.io.FileInputStream
 
 @Composable
 fun ThermalReceiptDialog(
@@ -141,20 +153,7 @@ fun ThermalReceiptDialog(
                     // Thermal Print
                     Button(
                         onClick = {
-                            val printers = EscPos58mmPrinterService.getPairedPrinters(context)
-                            if (printers.isEmpty()) {
-                                Toast.makeText(
-                                    context,
-                                    "جاري إرسال أمر الطباعة 58mm... (لا توجد طابعة بلوتوث مقترنة حالياً)",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    "تم إرسال أمر الطباعة إلى: ${printers.first().name}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                            printReceiptBitmap(context, bitmap, invoice.invoiceNumber)
                         },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp),
@@ -184,14 +183,18 @@ fun ThermalReceiptDialog(
                 // Export PDF Button
                 OutlinedButton(
                     onClick = {
-                        val pdf = PdfReceiptExporter.generateInvoicePdf(
-                            context = context,
-                            storeName = storeName,
-                            storePhone = storePhone,
-                            invoice = invoice,
-                            items = items
-                        )
-                        sharePdfFile(context, pdf)
+                        try {
+                            val pdf = PdfReceiptExporter.generateInvoicePdf(
+                                context = context,
+                                storeName = storeName,
+                                storePhone = storePhone,
+                                invoice = invoice,
+                                items = items
+                            )
+                            sharePdfFile(context, pdf)
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "تعذر إنشاء ملف PDF، حاول مرة أخرى", Toast.LENGTH_LONG).show()
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp)
@@ -235,5 +238,68 @@ private fun sharePdfFile(context: Context, pdfFile: File) {
         context.startActivity(Intent.createChooser(intent, "مشاركة ملف PDF"))
     } catch (e: Exception) {
         Toast.makeText(context, "تم حفظ ملف PDF: ${pdfFile.name}", Toast.LENGTH_SHORT).show()
+    }
+}
+
+private fun printReceiptBitmap(context: Context, bitmap: Bitmap, invoiceNum: String) {
+    try {
+        val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
+        val adapter = object : PrintDocumentAdapter() {
+            private var documentInfo: PrintDocumentInfo? = null
+
+            override fun onLayout(
+                oldAttributes: PrintAttributes?,
+                newAttributes: PrintAttributes,
+                cancellationSignal: CancellationSignal,
+                callback: LayoutResultCallback,
+                extras: Bundle?
+            ) {
+                if (cancellationSignal.isCanceled) {
+                    callback.onLayoutCancelled()
+                    return
+                }
+                documentInfo = PrintDocumentInfo.Builder("invoice_$invoiceNum.pdf")
+                    .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT)
+                    .setPageCount(1)
+                    .build()
+                callback.onLayoutFinished(documentInfo, true)
+            }
+
+            override fun onWrite(
+                pages: Array<out PageRange>,
+                destination: ParcelFileDescriptor,
+                cancellationSignal: CancellationSignal,
+                callback: WriteResultCallback
+            ) {
+                var pdf: PdfDocument? = null
+                try {
+                    if (cancellationSignal.isCanceled) {
+                        callback.onWriteCancelled()
+                        return
+                    }
+                    val pageWidth = 595
+                    val pageHeight = (pageWidth * bitmap.height.toFloat() / bitmap.width).toInt().coerceAtLeast(200)
+                    pdf = PdfDocument()
+                    val page = pdf.startPage(PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create())
+                    val target = RectF(12f, 12f, pageWidth - 12f, pageHeight - 12f)
+                    page.canvas.drawColor(android.graphics.Color.WHITE)
+                    page.canvas.drawBitmap(bitmap, null, target, android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG or android.graphics.Paint.FILTER_BITMAP_FLAG))
+                    pdf.finishPage(page)
+                    FileOutputStream(destination.fileDescriptor).use { pdf.writeTo(it) }
+                    callback.onWriteFinished(arrayOf(PageRange.ALL_PAGES))
+                } catch (e: Exception) {
+                    callback.onWriteFailed(e.message)
+                } finally {
+                    pdf?.close()
+                }
+            }
+        }
+        printManager.print("فاتورة_$invoiceNum", adapter, PrintAttributes.Builder()
+            .setMediaSize(PrintAttributes.MediaSize.UNKNOWN_PORTRAIT)
+            .setResolution(android.print.PrintAttributes.Resolution("receipt", "Receipt", 203, 203))
+            .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
+            .build())
+    } catch (e: Exception) {
+        Toast.makeText(context, "تعذر فتح خدمة الطباعة: ${e.message ?: "خطأ غير معروف"}", Toast.LENGTH_LONG).show()
     }
 }
