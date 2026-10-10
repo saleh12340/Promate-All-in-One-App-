@@ -186,6 +186,21 @@ fun StoreProfileScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
+            Column(Modifier.fillMaxWidth().padding(18.dp)) {
+                Text("النسخ الاحتياطي والاستعادة", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = DarkText)
+                Spacer(Modifier.height(6.dp))
+                Text("احفظ بيانات العملاء والفواتير والحركات في ملف لاستعادتها عند الحاجة.", fontSize = 13.sp, color = DarkText)
+                Spacer(Modifier.height(12.dp))
+                Button(onClick = { backupLauncher.launch("smart-invoicing-backup.db") }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)) { Text("إنشاء نسخة احتياطية", color = Color.White, fontWeight = FontWeight.Bold) }
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = { showRestoreConfirmation = true }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB42318))) { Text("استعادة نسخة احتياطية", color = Color.White, fontWeight = FontWeight.Bold) }
+            }
+        }
+        if (showRestoreConfirmation) {
+            AlertDialog(onDismissRequest = { showRestoreConfirmation = false }, title = { Text("تأكيد الاستعادة") }, text = { Text("ستُستبدل البيانات الحالية ببيانات النسخة الاحتياطية. أنشئ نسخة من بياناتك الحالية أولاً. هل تريد المتابعة؟") }, confirmButton = { TextButton(onClick = { showRestoreConfirmation = false; restoreLauncher.launch(arrayOf("*/*")) }) { Text("متابعة الاستعادة") } }, dismissButton = { TextButton(onClick = { showRestoreConfirmation = false }) { Text("إلغاء") } }, shape = RoundedCornerShape(20.dp))
+        }
+        Spacer(Modifier.height(16.dp))
         // Thermal Printing Specs card
         Card(
             modifier = Modifier.fillMaxWidth(),
