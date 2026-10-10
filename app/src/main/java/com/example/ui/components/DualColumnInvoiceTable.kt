@@ -167,41 +167,18 @@ fun DualColumnInvoiceTable(
 private fun HeaderSection(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier.padding(horizontal = 2.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(1.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "سعر\nالواحدة",
-            color = Color.White,
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.weight(1.1f)
-        )
-        Text(
-            text = "التفاصيل",
-            color = Color.White,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.weight(1.8f)
-        )
-        Text(
-            text = "العدد",
-            color = Color.White,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.weight(0.7f)
-        )
-        Text(
-            text = "الإجمالي",
-            color = Color.White,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.weight(1.2f)
-        )
+        // RTL: الإجمالي ثم الكمية ثم التفاصيل ثم سعر الواحدة
+        Text("الإجمالي", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center, maxLines = 1, modifier = Modifier.weight(1.15f))
+        Text("الكمية", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center, maxLines = 1, modifier = Modifier.weight(0.72f))
+        Text("التفاصيل", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center, maxLines = 1, modifier = Modifier.weight(1.7f))
+        Text("سعر الواحدة", color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center, maxLines = 1, modifier = Modifier.weight(1.1f))
     }
 }
 
@@ -215,67 +192,41 @@ private fun ItemCellQuad(
         modifier = modifier
             .clickable(enabled = item != null && item.description.isNotBlank()) { onClick() }
             .padding(vertical = 4.dp, horizontal = 2.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(1.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (item != null && (item.description.isNotBlank() || item.unitPrice > 0)) {
-            // سعر الواحدة (Blue)
-            Text(
-                text = EscPos58mmPrinterService.formatAmount(item.unitPrice),
-                color = TextBlue,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1.1f)
-            )
-
-            // التفاصيل (Dark Text with Wrapping)
-            Text(
-                text = item.description,
-                color = DarkText,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1.8f)
-            )
-
-            // العدد
-            Text(
-                text = item.quantityStr.ifBlank { "1" },
-                color = DarkText,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.weight(0.7f)
-            )
-
-            // الإجمالي (Blue)
+            // RTL order matches entry fields: total, quantity, details, unit price.
             Text(
                 text = EscPos58mmPrinterService.formatAmount(item.totalPrice),
-                color = TextBlue,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1.2f)
+                color = TextBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Clip,
+                modifier = Modifier.weight(1.15f)
+            )
+            Text(
+                text = item.quantityStr.ifBlank { "1" },
+                color = DarkText, fontSize = 10.sp, fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center, maxLines = 1,
+                modifier = Modifier.weight(0.72f)
+            )
+            Text(
+                text = item.description,
+                color = DarkText, fontSize = 9.sp, fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1.7f)
+            )
+            Text(
+                text = EscPos58mmPrinterService.formatAmount(item.unitPrice),
+                color = TextBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Clip,
+                modifier = Modifier.weight(1.1f)
             )
         } else {
-            // Empty placeholder row with 1 in Qty
-            Text(text = "", modifier = Modifier.weight(1.1f))
-            Text(text = "", modifier = Modifier.weight(1.8f))
-            Text(
-                text = "1",
-                color = Color.LightGray,
-                fontSize = 11.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.weight(0.7f)
-            )
-            Text(text = "", modifier = Modifier.weight(1.2f))
+            Text("", modifier = Modifier.weight(1.15f))
+            Text("1", color = Color.LightGray, fontSize = 10.sp, textAlign = TextAlign.Center,
+                modifier = Modifier.weight(0.72f))
+            Text("", modifier = Modifier.weight(1.7f))
+            Text("", modifier = Modifier.weight(1.1f))
         }
     }
 }
