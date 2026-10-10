@@ -65,7 +65,7 @@ fun TopInputActionBar(
         modifier = modifier
             .fillMaxWidth()
             .testTag("top_input_action_bar"),
-        shape = RoundedCornerShape(16.dp),
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
@@ -118,7 +118,7 @@ fun TopInputActionBar(
                     placeholder = { Text("المبلغ (ر.ي)", fontSize = 12.sp) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
+                    shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = if (selectedType == VoucherType.RECEIPT) GreenCredit else CoralDebit,
                         unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
@@ -134,7 +134,7 @@ fun TopInputActionBar(
                         .testTag("voucher_statement_input"),
                     placeholder = { Text("البيان / ملاحظة", fontSize = 12.sp) },
                     singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
+                    shape = MaterialTheme.shapes.small,
                     trailingIcon = {
                         IconButton(
                             onClick = onVoiceClick,
@@ -160,7 +160,7 @@ fun TopInputActionBar(
                 Button(
                     onClick = onSubmit,
                     enabled = !isLoading && amount.isNotBlank(),
-                    shape = RoundedCornerShape(10.dp),
+                    shape = MaterialTheme.shapes.small,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedType == VoucherType.RECEIPT) GreenCredit else CoralDebit
                     ),
@@ -200,7 +200,7 @@ private fun VoucherTypeTab(
 ) {
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(8.dp),
+        shape = MaterialTheme.shapes.small,
         color = if (selected) activeColor.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
         border = if (selected) androidx.compose.foundation.BorderStroke(1.5.dp, activeColor) else null,
         modifier = modifier.height(38.dp)
