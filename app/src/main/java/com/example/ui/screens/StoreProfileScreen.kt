@@ -100,13 +100,17 @@ fun StoreProfileScreen(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("اسم المتجر أو المنشأة") },
+                    label = { Text("اسم المتجر") },
+                    placeholder = { Text("مثال: بقالة العزي") },
                     singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = PrimaryBlue,
-                        unfocusedBorderColor = CellBorderColor
+                        unfocusedBorderColor = CellBorderColor,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color(0xFFFAFCFF),
+                        cursorColor = PrimaryBlue
                     )
                 )
 
@@ -115,7 +119,8 @@ fun StoreProfileScreen(
                 OutlinedTextField(
                     value = phone,
                     onValueChange = { phone = it },
-                    label = { Text("رقم الهاتف أو الجوال") },
+                    label = { Text("رقم الهاتف") },
+                    placeholder = { Text("7xxxxxxxx") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     singleLine = true,
                     shape = RoundedCornerShape(10.dp),
@@ -169,8 +174,8 @@ fun StoreProfileScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "• قياس الورق: طابعات فواتير حرارية 58mm القياسية المحمولة (32 حرفاً بالسطر).\n• بروتوكول الطباعة: أوامر ESC/POS المباشرة وبث البت ماب (Bitmap) عبر البلوتوث.\n• العملة المعتمدة: الريال اليمني (ر.ي / YER).",
-                    fontSize = 12.sp,
-                    lineHeight = 20.sp,
+                    fontSize = 13.sp,
+                    lineHeight = 22.sp,
                     color = DarkText
                 )
             }
