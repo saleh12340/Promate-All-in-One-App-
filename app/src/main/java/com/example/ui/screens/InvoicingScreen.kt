@@ -234,13 +234,13 @@ fun InvoicingScreen(
                     OutlinedTextField(
                         value = topUnitPrice,
                         onValueChange = { viewModel.onTopUnitPriceChanged(it) },
-                        placeholder = { Text("سعر الواحدة", fontSize = 10.sp, textAlign = TextAlign.Center) },
+                        placeholder = { Text("سعر الواحدة", fontSize = 12.sp, textAlign = TextAlign.Center) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .weight(1.1f)
-                            .height(50.dp)
+                            .height(56.dp)
                             .testTag("top_price_input"),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = CellBorderColor,
@@ -252,7 +252,7 @@ fun InvoicingScreen(
                     OutlinedTextField(
                         value = topDetails,
                         onValueChange = { viewModel.topItemDetails.value = it },
-                        placeholder = { Text("التفاصيل", fontSize = 11.sp) },
+                        placeholder = { Text("التفاصيل", fontSize = 13.sp) },
                         singleLine = true,
                         trailingIcon = {
                             IconButton(
@@ -300,7 +300,7 @@ fun InvoicingScreen(
                     OutlinedTextField(
                         value = topTotal,
                         onValueChange = { viewModel.onTopTotalChanged(it) },
-                        placeholder = { Text("القيمة الإجمالية", fontSize = 10.sp, textAlign = TextAlign.Center) },
+                        placeholder = { Text("القيمة الإجمالية", fontSize = 11.sp, textAlign = TextAlign.Center) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         shape = RoundedCornerShape(10.dp),
@@ -442,8 +442,8 @@ fun InvoicingScreen(
                         onValueChange = { viewModel.invoiceCustomerName.value = it },
                         modifier = Modifier
                             .weight(1f)
-                            .height(42.dp),
-                        placeholder = { Text("اسم العميل...", fontSize = 11.sp) },
+                            .height(48.dp),
+                        placeholder = { Text("اسم العميل", fontSize = 13.sp) },
                         singleLine = true,
                         shape = RoundedCornerShape(8.dp),
                         colors = OutlinedTextFieldDefaults.colors(
