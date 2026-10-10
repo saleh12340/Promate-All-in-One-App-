@@ -23,16 +23,13 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Create Mock/Debug Environment Configuration
+      - name: Prepare Build Environment
         run: |
           cp .env.example .env
-          echo "sdk.dir=$ANDROID_HOME" > local.properties
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+          if [ -f "debug.keystore.base64" ]; then
+            base64 -d debug.keystore.base64 > debug.keystore
+          fi
+          chmod +x gradlew
 
       - name: Run Unit Tests
         run: ./gradlew :app:testDebugUnitTest --stacktrace
