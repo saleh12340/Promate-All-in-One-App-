@@ -100,7 +100,7 @@ fun CustomerLedgerScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 14.dp, vertical = 10.dp)
+            .padding(start = 12.dp, top = 2.dp, end = 12.dp, bottom = 10.dp)
             .testTag("customer_ledger_screen")
     ) {
         // TOP OF SCREEN UTILIZATION: Single-Row Action Bar for Quick Vouchers
