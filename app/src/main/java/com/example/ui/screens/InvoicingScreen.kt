@@ -224,104 +224,73 @@ fun InvoicingScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 6.dp, vertical = 4.dp)
             ) {
-                // Row of 4 input fields: سعر الواحدة | التفاصيل (مع ميكروفون) | 1 (العدد) | القيمة الإجمالية
+                // ترتيب الحقول من اليمين إلى اليسار: الإجمالي، الكمية، التفاصيل، سعر الواحدة
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // سعر الواحدة
-                    OutlinedTextField(
-                        value = topUnitPrice,
-                        onValueChange = { viewModel.onTopUnitPriceChanged(it) },
-                        placeholder = { Text("سعر الواحدة", fontSize = 12.sp, textAlign = TextAlign.Center) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier
-                            .weight(1.1f)
-                            .height(52.dp)
-                            .testTag("top_price_input"),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = CellBorderColor,
-                            focusedBorderColor = PrimaryBlue,
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color(0xFFFAFCFF),
-                            cursorColor = PrimaryBlue
-                        )
-                    )
-
-                    // التفاصيل (with Voice Mic)
-                    OutlinedTextField(
-                        value = topDetails,
-                        onValueChange = { viewModel.topItemDetails.value = it },
-                        placeholder = { Text("التفاصيل", fontSize = 13.sp) },
-                        singleLine = true,
-                        trailingIcon = {
-                            IconButton(
-                                onClick = { requestVoiceForDetails() },
-                                modifier = Modifier.size(26.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.Mic,
-                                    contentDescription = "صوت",
-                                    tint = PrimaryBlue,
-                                    modifier = Modifier.size(17.dp)
-                                )
-                            }
-                        },
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier
-                            .weight(1.8f)
-                            .height(52.dp)
-                            .testTag("top_details_input"),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = CellBorderColor,
-                            focusedBorderColor = PrimaryBlue,
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color(0xFFFAFCFF),
-                            cursorColor = PrimaryBlue
-                        )
-                    )
-
-                    // العدد (1)
-                    OutlinedTextField(
-                        value = topQty,
-                        onValueChange = { viewModel.onTopQtyChanged(it) },
-                        placeholder = { Text("1", fontSize = 11.sp, textAlign = TextAlign.Center) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier
-                            .weight(0.7f)
-                            .height(52.dp)
-                            .testTag("top_qty_input"),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = CellBorderColor,
-                            focusedBorderColor = PrimaryBlue,
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color(0xFFFAFCFF),
-                            cursorColor = PrimaryBlue
-                        )
-                    )
-
-                    // القيمة الإجمالية
                     OutlinedTextField(
                         value = topTotal,
                         onValueChange = { viewModel.onTopTotalChanged(it) },
-                        placeholder = { Text("القيمة الإجمالية", fontSize = 11.sp, textAlign = TextAlign.Center) },
+                        placeholder = { Text("الإجمالي", fontSize = 11.sp, textAlign = TextAlign.Center, maxLines = 1) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
                         shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier
-                            .weight(1.2f)
-                            .height(52.dp)
-                            .testTag("top_total_input"),
+                        modifier = Modifier.weight(1.15f).height(48.dp).testTag("top_total_input"),
                         colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = CellBorderColor,
-                            focusedBorderColor = PrimaryBlue,
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color(0xFFFAFCFF),
+                            unfocusedBorderColor = CellBorderColor, focusedBorderColor = PrimaryBlue,
+                            focusedContainerColor = Color.White, unfocusedContainerColor = Color(0xFFFAFCFF),
+                            cursorColor = PrimaryBlue
+                        )
+                    )
+                    OutlinedTextField(
+                        value = topQty,
+                        onValueChange = { viewModel.onTopQtyChanged(it) },
+                        placeholder = { Text("الكمية", fontSize = 11.sp, textAlign = TextAlign.Center, maxLines = 1) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.weight(0.72f).height(48.dp).testTag("top_qty_input"),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = CellBorderColor, focusedBorderColor = PrimaryBlue,
+                            focusedContainerColor = Color.White, unfocusedContainerColor = Color(0xFFFAFCFF),
+                            cursorColor = PrimaryBlue
+                        )
+                    )
+                    OutlinedTextField(
+                        value = topDetails,
+                        onValueChange = { viewModel.topItemDetails.value = it },
+                        placeholder = { Text("التفاصيل", fontSize = 12.sp, textAlign = TextAlign.Center, maxLines = 1) },
+                        singleLine = true,
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                        trailingIcon = {
+                            IconButton(onClick = { requestVoiceForDetails() }, modifier = Modifier.size(24.dp)) {
+                                Icon(Icons.Default.Mic, contentDescription = "إدخال صوتي", tint = PrimaryBlue, modifier = Modifier.size(16.dp))
+                            }
+                        },
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.weight(1.7f).height(48.dp).testTag("top_details_input"),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = CellBorderColor, focusedBorderColor = PrimaryBlue,
+                            focusedContainerColor = Color.White, unfocusedContainerColor = Color(0xFFFAFCFF),
+                            cursorColor = PrimaryBlue
+                        )
+                    )
+                    OutlinedTextField(
+                        value = topUnitPrice,
+                        onValueChange = { viewModel.onTopUnitPriceChanged(it) },
+                        placeholder = { Text("سعر الواحدة", fontSize = 10.sp, textAlign = TextAlign.Center, maxLines = 1) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.weight(1.1f).height(48.dp).testTag("top_price_input"),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = CellBorderColor, focusedBorderColor = PrimaryBlue,
+                            focusedContainerColor = Color.White, unfocusedContainerColor = Color(0xFFFAFCFF),
                             cursorColor = PrimaryBlue
                         )
                     )
